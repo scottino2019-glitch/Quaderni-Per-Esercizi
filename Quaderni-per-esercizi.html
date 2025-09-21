@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor Quadretti e Righe</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: yellow;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .editor-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        #drawingArea {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            position: relative;
+            margin: 0 auto 20px;
+            cursor: default;
+            touch-action: none;
+            background-image: 
+                linear-gradient(#999 2px, transparent 2px),
+                linear-gradient(90deg, #999 2px, transparent 2px);
+            background-size: 50px 50px;
+            background-color: white;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+
+        .save-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .save-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .save-input {
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            min-width: 200px;
+        }
+
+        .save-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .saved-drawings {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .saved-drawings h3 {
+            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
+        }
+
+        .drawings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .drawing-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .drawing-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102,126,234,0.2);
+        }
+
+        .drawing-preview {
+            width: 100%;
+            height: 120px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            background: white;
+            background-image: 
+                linear-gradient(#f0f0f0 1px, transparent 1px),
+                linear-gradient(90deg, #f0f0f0 1px, transparent 1px);
+            background-size: 15px 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .drawing-preview svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100% !important;
+            height: 100% !important;
+            transform: scale(0.2);
+            transform-origin: top left;
+        }
+
+        .drawing-name {
+            font-weight: 500;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .drawing-date {
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .drawing-actions {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 40px;
+        }
+
+        .format-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .format-controls label {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .format-btn.active {
+            background: #667eea !important;
+            color: white !important;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            #drawingArea {
+                height: 400px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .save-controls {
+                flex-direction: column;
+            }
+            
+            .save-input {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📝 Editor Quadretti e Righe</h1>
+            <p>Scrivi, disegna e salva i tuoi appunti</p>
+        </div>
+
+        <div class="editor-container">
+            <div id="drawingArea"></div>
+            
+            <div class="controls">
+                <button class="btn btn-primary" id="startDrawingBtn" onclick="enableDrawing()">✏️ Inizia a Disegnare</button>
+                <button class="btn btn-secondary" id="undoBtn" onclick="undoLastStroke()" style="display: none;">↶ Annulla Ultimo</button>
+                <button class="btn btn-secondary" id="clearBtn" onclick="clearDrawing()" style="display: none;">🗑️ Cancella Tutto</button>
+                <button class="btn btn-primary" id="newBtn" onclick="newDrawing()" style="display: none;">📄 Nuovo</button>
+            </div>
+
+            <div class="format-controls">
+                <label>Formato foglio:</label>
+                <button class="btn btn-secondary format-btn active" onclick="setFormat('squares')">📋 Quadretti</button>
+                <button class="btn btn-secondary format-btn" onclick="setFormat('lines')">📝 Righe</button>
+            </div>
+
+            <div class="save-section">
+                <div class="save-controls">
+                    <input type="text" class="save-input" id="drawingName" placeholder="Nome del disegno..." maxlength="50">
+                    <button class="btn btn-primary" onclick="saveDrawing()">💾 Salva</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="saved-drawings">
+            <h3>Disegni Salvati</h3>
+            <div class="drawings-grid" id="savedDrawingsGrid">
+                <div class="empty-state">
+                    Nessun disegno salvato ancora. Inizia a disegnare e salva il tuo primo lavoro!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isDrawing = false;
+        let drawingArea;
+        let currentPath = null;
+        let strokes = [];
+        let currentStrokeIndex = 0;
+        let drawingEnabled = false;
+        let currentFormat = 'squares';
+
+        // Inizializzazione
+        document.addEventListener('DOMContentLoaded', function() {
+            initDrawing();
+            loadSavedDrawings();
+            generateDefaultName();
+        });
+
+        function initDrawing() {
+            drawingArea = document.getElementById('drawingArea');
+            
+            // Mouse events
+            drawingArea.addEventListener('mousedown', startDrawing);
+            drawingArea.addEventListener('mousemove', draw);
+            drawingArea.addEventListener('mouseup', stopDrawing);
+            drawingArea.addEventListener('mouseleave', stopDrawing);
+            
+            // Touch events
+            drawingArea.addEventListener('touchstart', handleTouch);
+            drawingArea.addEventListener('touchmove', handleTouch);
+            drawingArea.addEventListener('touchend', stopDrawing);
+        }
+
+        function getPosition(e) {
+            const rect = drawingArea.getBoundingClientRect();
+            return {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+        }
+
+        function enableDrawing() {
+            drawingEnabled = true;
+            drawingArea.style.cursor = 'crosshair';
+            
+            document.getElementById('startDrawingBtn').style.display = 'none';
+            document.getElementById('undoBtn').style.display = 'inline-block';
+            document.getElementById('clearBtn').style.display = 'inline-block';
+            document.getElementById('newBtn').style.display = 'inline-block';
+        }
+
+        function startDrawing(e) {
+            if (!drawingEnabled) return;
+            
+            e.preventDefault();
+            isDrawing = true;
+            
+            const pos = getPosition(e);
+            
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.style.position = 'absolute';
+            svg.style.top = '0';
+            svg.style.left = '0';
+            svg.style.width = '100%';
+            svg.style.height = '100%';
+            svg.style.pointerEvents = 'none';
+            svg.setAttribute('viewBox', '0 0 ' + drawingArea.offsetWidth + ' ' + drawingArea.offsetHeight);
+            
+            currentPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            currentPath.setAttribute('stroke', '#333');
+            currentPath.setAttribute('stroke-width', '2');
+            currentPath.setAttribute('stroke-linecap', 'round');
+            currentPath.setAttribute('stroke-linejoin', 'round');
+            currentPath.setAttribute('fill', 'none');
+            currentPath.setAttribute('d', `M ${pos.x} ${pos.y}`);
+            
+            svg.appendChild(currentPath);
+            drawingArea.appendChild(svg);
+            
+            // Salva il riferimento al tratto corrente
+            strokes.push(svg);
+            currentStrokeIndex = strokes.length;
+        }
+
+        function draw(e) {
+            if (!isDrawing || !currentPath) return;
+            
+            e.preventDefault();
+            const pos = getPosition(e);
+            
+            const currentD = currentPath.getAttribute('d');
+            currentPath.setAttribute('d', currentD + ` L ${pos.x} ${pos.y}`);
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+            currentPath = null;
+        }
+
+        function handleTouch(e) {
+            e.preventDefault();
+            
+            if (e.touches.length > 0) {
+                const touch = e.touches[0];
+                const fakeEvent = {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY,
+                    preventDefault: () => {}
+                };
+                
+                if (e.type === 'touchstart') {
+                    startDrawing(fakeEvent);
+                } else if (e.type === 'touchmove') {
+                    draw(fakeEvent);
+                }
+            }
+        }
+
+        function undoLastStroke() {
+            if (strokes.length > 0) {
+                const lastStroke = strokes.pop();
+                lastStroke.remove();
+                currentStrokeIndex = strokes.length;
+            }
+        }
+
+        function clearDrawing() {
+            const svgs = drawingArea.querySelectorAll('svg');
+            svgs.forEach(svg => svg.remove());
+            strokes = [];
+            currentStrokeIndex = 0;
+        }
+
+        function newDrawing() {
+            clearDrawing();
+            generateDefaultName();
+            drawingEnabled = false;
+            drawingArea.style.cursor = 'default';
+            
+            document.getElementById('startDrawingBtn').style.display = 'inline-block';
+            document.getElementById('undoBtn').style.display = 'none';
+            document.getElementById('clearBtn').style.display = 'none';
+            document.getElementById('newBtn').style.display = 'none';
+        }
+
+        function generateDefaultName() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('it-IT').replace(/\//g, '-');
+            const timeStr = now.toLocaleTimeString('it-IT', {hour: '2-digit', minute: '2-digit'});
+            document.getElementById('drawingName').value = `Disegno ${dateStr} ${timeStr}`;
+        }
+
+        function saveDrawing() {
+            const name = document.getElementById('drawingName').value.trim();
+            if (!name) {
+                alert('Inserisci un nome per il disegno!');
+                return;
+            }
+
+            if (strokes.length === 0) {
+                alert('Non c\'è niente da salvare! Disegna qualcosa prima.');
+                return;
+            }
+
+            // Serializza il disegno
+            const drawingData = {
+                name: name,
+                date: new Date().toISOString(),
+                strokes: strokes.map(svg => svg.outerHTML)
+            };
+
+            // Salva in localStorage
+            const savedDrawings = JSON.parse(localStorage.getItem('editorDrawings') || '[]');
+            
+            // Controlla se esiste già un disegno con questo nome
+            const existingIndex = savedDrawings.findIndex(d => d.name === name);
+            if (existingIndex !== -1) {
+                if (!confirm('Esiste già un disegno con questo nome. Vuoi sovrascriverlo?')) {
+                    return;
+                }
+                savedDrawings[existingIndex] = drawingData;
+            } else {
+                savedDrawings.push(drawingData);
+            }
+
+            localStorage.setItem('editorDrawings', JSON.stringify(savedDrawings));
+            
+            alert('Disegno salvato con successo!');
+            loadSavedDrawings();
+            generateDefaultName();
+        }
+
+        function loadSavedDrawings() {
+            const savedDrawings = JSON.parse(localStorage.getItem('editorDrawings') || '[]');
+            const grid = document.getElementById('savedDrawingsGrid');
+            
+            if (savedDrawings.length === 0) {
+                grid.innerHTML = '<div class="empty-state">Nessun disegno salvato ancora. Inizia a disegnare e salva il tuo primo lavoro!</div>';
+                return;
+            }
+
+            grid.innerHTML = '';
+            
+            savedDrawings.forEach((drawing, index) => {
+                const card = document.createElement('div');
+                card.className = 'drawing-card';
+                
+                const preview = document.createElement('div');
+                preview.className = 'drawing-preview';
+                preview.innerHTML = drawing.strokes.join('');
+                
+                const date = new Date(drawing.date);
+                const dateStr = date.toLocaleDateString('it-IT') + ' ' + date.toLocaleTimeString('it-IT', {hour: '2-digit', minute: '2-digit'});
+                
+                card.innerHTML = `
+                    <div class="drawing-name">${drawing.name}</div>
+                    <div class="drawing-date">${dateStr}</div>
+                    <div class="drawing-actions">
+                        <button class="btn btn-primary btn-small" onclick="loadDrawing(${index})">Carica</button>
+                        <button class="btn btn-danger btn-small" onclick="deleteDrawing(${index})">Elimina</button>
+                    </div>
+                `;
+                
+                card.insertBefore(preview, card.firstChild);
+                grid.appendChild(card);
+            });
+        }
+
+        function loadDrawing(index) {
+            const savedDrawings = JSON.parse(localStorage.getItem('editorDrawings') || '[]');
+            const drawing = savedDrawings[index];
+            
+            if (!drawing) return;
+            
+            // Pulisce l'area di disegno
+            clearDrawing();
+            
+            // Carica i tratti
+            drawing.strokes.forEach(strokeHTML => {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = strokeHTML;
+                const svg = tempDiv.firstChild;
+                
+                drawingArea.appendChild(svg);
+                strokes.push(svg);
+            });
+            
+            currentStrokeIndex = strokes.length;
+            
+            // Abilita il disegno automaticamente
+            enableDrawing();
+            
+            // Aggiorna il nome
+            document.getElementById('drawingName').value = drawing.name;
+            
+            // Scroll verso l'editor
+            document.querySelector('.editor-container').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function deleteDrawing(index) {
+            const savedDrawings = JSON.parse(localStorage.getItem('editorDrawings') || '[]');
+            const drawing = savedDrawings[index];
+            
+            if (!confirm(`Sei sicuro di voler eliminare "${drawing.name}"?`)) {
+                return;
+            }
+            
+            savedDrawings.splice(index, 1);
+            localStorage.setItem('editorDrawings', JSON.stringify(savedDrawings));
+            
+            loadSavedDrawings();
+        }
+
+        function setFormat(format) {
+            currentFormat = format;
+            
+            // Aggiorna i pulsanti attivi
+            document.querySelectorAll('.format-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Cambia lo sfondo dell'area di disegno
+            if (format === 'squares') {
+                drawingArea.style.backgroundImage = `
+                    linear-gradient(#999 2px, transparent 2px),
+                    linear-gradient(90deg, #999 2px, transparent 2px)
+                `;
+                drawingArea.style.backgroundSize = '50px 50px';
+            } else if (format === 'lines') {
+                drawingArea.style.backgroundImage = `
+                    linear-gradient(transparent 49px, #999 49px, #999 51px, transparent 51px),
+                    linear-gradient(transparent 24px, #ccc 24px, #ccc 25px, transparent 25px)
+                `;
+                drawingArea.style.backgroundSize = '100% 50px';
+            }
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'980f7bc5a511ed54',t:'MTc1ODE4NDI0OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
