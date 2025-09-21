@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor Righi Prima Elementare</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #e3f2fd 0%, #f8bbd9 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .toolbar {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        input[type="text"] {
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        select {
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+        }
+
+        .writing-area {
+            height: 600px;
+            overflow-y: auto;
+            background: #fefefe;
+            position: relative;
+            border: 3px solid #ddd;
+        }
+
+        .notebook-page {
+            width: 100%;
+            min-height: 1500px;
+            background: #fefefe;
+            position: relative;
+        }
+
+        .notebook-page::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                /* Margine rosso verticale */
+                linear-gradient(90deg, transparent 58px, #e74c3c 58px, #e74c3c 62px, transparent 62px),
+                /* Righi di prima elementare - rettangoli racchiusi tra due righe blu */
+                repeating-linear-gradient(
+                    0deg,
+                    transparent 0px,
+                    transparent 59px,
+                    #1e40af 60px,
+                    #1e40af 62px,
+                    #f0f8ff 62px,
+                    #f0f8ff 98px,
+                    #1e40af 98px,
+                    #1e40af 100px,
+                    transparent 100px,
+                    transparent 119px
+                );
+            background-size: 100% 120px;
+            background-position: 0 40px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .notebook-page::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                /* Buchi del quaderno */
+                radial-gradient(circle at 30px 100px, transparent 8px, #fefefe 8px),
+                radial-gradient(circle at 30px 250px, transparent 8px, #fefefe 8px),
+                radial-gradient(circle at 30px 400px, transparent 8px, #fefefe 8px),
+                radial-gradient(circle at 30px 550px, transparent 8px, #fefefe 8px),
+                radial-gradient(circle at 30px 700px, transparent 8px, #fefefe 8px),
+                radial-gradient(circle at 30px 850px, transparent 8px, #fefefe 8px),
+                radial-gradient(circle at 30px 1000px, transparent 8px, #fefefe 8px),
+                radial-gradient(circle at 30px 1150px, transparent 8px, #fefefe 8px),
+                radial-gradient(circle at 30px 1300px, transparent 8px, #fefefe 8px);
+            pointer-events: none;
+        }
+
+        #writingCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            cursor: default;
+            z-index: 20;
+        }
+
+        .saved-docs {
+            background: #f8f9fa;
+            padding: 20px;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .saved-docs h3 {
+            color: #495057;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .doc-item {
+            background: white;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .doc-name {
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .doc-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .input-group {
+                width: 100%;
+            }
+            
+            input[type="text"], select {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📝 Editor Righi Prima Elementare</h1>
+            <p>Scrivi come a scuola sui righi di prima!</p>
+        </div>
+
+        <div class="toolbar">
+            <button class="btn" id="toggleDrawing" onclick="toggleDrawing()">✏️ Inizia a Scrivere</button>
+            <button class="btn btn-danger" onclick="undoLastStroke()">↶ Cancella Ultimo Tratto</button>
+            <button class="btn btn-warning" onclick="clearCanvas()">🗑️ Cancella Tutto</button>
+            
+            <div class="input-group">
+                <input type="text" id="docName" placeholder="Nome documento..." maxlength="30">
+                <button class="btn btn-success" onclick="saveDocument()">💾 Salva</button>
+            </div>
+            
+            <div class="input-group">
+                <select id="savedDocs" onchange="loadSelectedDocument()">
+                    <option value="">Carica documento...</option>
+                </select>
+                <button class="btn btn-danger btn-sm" onclick="deleteSelectedDocument()">🗑️</button>
+            </div>
+        </div>
+
+        <div class="writing-area" id="writingArea">
+            <div class="notebook-page">
+                <canvas id="writingCanvas"></canvas>
+            </div>
+        </div>
+
+        <div class="saved-docs">
+            <h3>📚 Documenti Salvati</h3>
+            <div id="docsList"></div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('writingCanvas');
+        const ctx = canvas.getContext('2d');
+        const writingArea = document.getElementById('writingArea');
+        
+        let isDrawing = false;
+        let strokes = [];
+        let currentStroke = [];
+        let drawingEnabled = false;
+
+        // Inizializzazione
+        window.addEventListener('load', function() {
+            setupCanvas();
+            loadDocumentsList();
+        });
+
+        function setupCanvas() {
+            // Imposta dimensioni del canvas
+            canvas.width = writingArea.offsetWidth;
+            canvas.height = 1500; // Altezza della pagina del quaderno
+            
+            // Configurazione stile disegno
+            ctx.strokeStyle = '#1a202c';
+            ctx.lineWidth = 2.5;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+        }
+
+        // Funzione per ottenere coordinate corrette
+        function getCoordinates(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scrollTop = writingArea.scrollTop;
+            
+            let x, y;
+            
+            if (e.touches) {
+                // Touch event
+                x = e.touches[0].clientX - rect.left;
+                y = e.touches[0].clientY - rect.top + scrollTop;
+            } else {
+                // Mouse event
+                x = e.clientX - rect.left;
+                y = e.clientY - rect.top + scrollTop;
+            }
+            
+            return { x, y };
+        }
+
+        // Eventi mouse
+        canvas.addEventListener('mousedown', function(e) {
+            if (!drawingEnabled) return;
+            e.preventDefault();
+            isDrawing = true;
+            const coords = getCoordinates(e);
+            currentStroke = [coords];
+        });
+
+        canvas.addEventListener('mousemove', function(e) {
+            if (!isDrawing || !drawingEnabled) return;
+            e.preventDefault();
+            const coords = getCoordinates(e);
+            currentStroke.push(coords);
+            drawLine(currentStroke[currentStroke.length - 2], coords);
+        });
+
+        canvas.addEventListener('mouseup', function(e) {
+            if (!isDrawing) return;
+            e.preventDefault();
+            finishStroke();
+        });
+
+        // Eventi touch
+        canvas.addEventListener('touchstart', function(e) {
+            if (!drawingEnabled) return;
+            e.preventDefault();
+            isDrawing = true;
+            const coords = getCoordinates(e);
+            currentStroke = [coords];
+        });
+
+        canvas.addEventListener('touchmove', function(e) {
+            if (!isDrawing || !drawingEnabled) return;
+            e.preventDefault();
+            const coords = getCoordinates(e);
+            currentStroke.push(coords);
+            drawLine(currentStroke[currentStroke.length - 2], coords);
+        });
+
+        canvas.addEventListener('touchend', function(e) {
+            if (!isDrawing) return;
+            e.preventDefault();
+            finishStroke();
+        });
+
+        function drawLine(from, to) {
+            ctx.beginPath();
+            ctx.moveTo(from.x, from.y);
+            ctx.lineTo(to.x, to.y);
+            ctx.stroke();
+        }
+
+        function finishStroke() {
+            if (currentStroke.length > 0) {
+                strokes.push([...currentStroke]);
+                currentStroke = [];
+            }
+            isDrawing = false;
+        }
+
+        function redrawCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            strokes.forEach(stroke => {
+                if (stroke.length > 1) {
+                    ctx.beginPath();
+                    ctx.moveTo(stroke[0].x, stroke[0].y);
+                    
+                    for (let i = 1; i < stroke.length; i++) {
+                        ctx.lineTo(stroke[i].x, stroke[i].y);
+                    }
+                    ctx.stroke();
+                }
+            });
+        }
+
+        function toggleDrawing() {
+            const btn = document.getElementById('toggleDrawing');
+            drawingEnabled = !drawingEnabled;
+            
+            if (drawingEnabled) {
+                btn.textContent = '⏸️ Pausa Scrittura';
+                btn.style.background = '#ffc107';
+                btn.style.color = '#212529';
+                canvas.style.cursor = 'crosshair';
+            } else {
+                btn.textContent = '✏️ Inizia a Scrivere';
+                btn.style.background = '#007bff';
+                btn.style.color = 'white';
+                canvas.style.cursor = 'default';
+            }
+        }
+
+        function undoLastStroke() {
+            if (strokes.length > 0) {
+                strokes.pop();
+                redrawCanvas();
+            }
+        }
+
+        function clearCanvas() {
+            strokes = [];
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function saveDocument() {
+            const name = document.getElementById('docName').value.trim();
+            if (!name) {
+                alert('Inserisci un nome per il documento!');
+                return;
+            }
+            
+            const documentData = {
+                name: name,
+                strokes: strokes,
+                timestamp: new Date().toLocaleString('it-IT')
+            };
+            
+            localStorage.setItem('doc_' + name, JSON.stringify(documentData));
+            document.getElementById('docName').value = '';
+            loadDocumentsList();
+            alert('Documento salvato con successo! 📝');
+        }
+
+        function loadDocumentsList() {
+            const select = document.getElementById('savedDocs');
+            const docsList = document.getElementById('docsList');
+            
+            select.innerHTML = '<option value="">Carica documento...</option>';
+            docsList.innerHTML = '';
+            
+            const docs = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('doc_')) {
+                    const docData = JSON.parse(localStorage.getItem(key));
+                    docs.push(docData);
+                }
+            }
+            
+            docs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            if (docs.length === 0) {
+                docsList.innerHTML = '<p style="color: #6c757d; font-style: italic;">Nessun documento salvato</p>';
+                return;
+            }
+            
+            docs.forEach(doc => {
+                const option = document.createElement('option');
+                option.value = doc.name;
+                option.textContent = doc.name;
+                select.appendChild(option);
+                
+                const docItem = document.createElement('div');
+                docItem.className = 'doc-item';
+                docItem.innerHTML = `
+                    <div>
+                        <div class="doc-name">${doc.name}</div>
+                        <small style="color: #6c757d;">Salvato: ${doc.timestamp}</small>
+                    </div>
+                    <div class="doc-actions">
+                        <button class="btn btn-sm" onclick="loadDocument('${doc.name}')">📖 Carica</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteDocument('${doc.name}')">🗑️ Elimina</button>
+                    </div>
+                `;
+                docsList.appendChild(docItem);
+            });
+        }
+
+        function loadSelectedDocument() {
+            const select = document.getElementById('savedDocs');
+            const docName = select.value;
+            if (docName) {
+                loadDocument(docName);
+                select.value = '';
+            }
+        }
+
+        function loadDocument(name) {
+            const docData = localStorage.getItem('doc_' + name);
+            if (docData) {
+                const document = JSON.parse(docData);
+                strokes = document.strokes || [];
+                redrawCanvas();
+                alert(`Documento "${name}" caricato! 📖`);
+            }
+        }
+
+        function deleteSelectedDocument() {
+            const select = document.getElementById('savedDocs');
+            const docName = select.value;
+            if (docName) {
+                deleteDocument(docName);
+                select.value = '';
+            }
+        }
+
+        function deleteDocument(name) {
+            if (confirm(`Sei sicuro di voler eliminare il documento "${name}"?`)) {
+                localStorage.removeItem('doc_' + name);
+                loadDocumentsList();
+                alert(`Documento "${name}" eliminato! 🗑️`);
+            }
+        }
+
+        window.addEventListener('resize', function() {
+            setupCanvas();
+            redrawCanvas();
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98244388f763edd3',t:'MTc1ODQwMjE0Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
