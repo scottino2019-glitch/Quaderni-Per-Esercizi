@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor a Quadretti - Nuovo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .grid-bg {
+            background-image: 
+                linear-gradient(to right, #e5e7eb 1px, transparent 1px),
+                linear-gradient(to bottom, #e5e7eb 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        
+        .drawing-cursor {
+            cursor: crosshair;
+        }
+        
+        .disabled-cursor {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-500 to-purple-600 min-h-screen p-4">
+    <div class="max-w-7xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gray-800 text-white p-4">
+            <div class="flex flex-wrap justify-between items-center gap-4">
+                <h1 class="text-2xl font-bold">📝 Editor a Quadretti</h1>
+                <div class="flex flex-wrap gap-2">
+                    <button id="toggleDraw" class="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded font-semibold transition-colors">
+                        🎨 Inizia Disegno
+                    </button>
+                    <button onclick="createNewDocument()" class="bg-green-500 hover:bg-green-600 px-4 py-2 rounded font-semibold transition-colors">
+                        📄 Nuovo Documento
+                    </button>
+                    <button onclick="saveDocument()" class="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded font-semibold transition-colors">
+                        💾 Salva Documento
+                    </button>
+                    <button onclick="undoLastStroke()" class="bg-orange-500 hover:bg-orange-600 px-4 py-2 rounded font-semibold transition-colors">
+                        ↶ Annulla
+                    </button>
+                    <button onclick="clearCurrentPage()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded font-semibold transition-colors">
+                        🗑️ Cancella Pagina
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page Controls -->
+        <div class="bg-gray-100 p-4 border-b">
+            <div class="flex flex-wrap justify-between items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <span class="font-semibold">Pagina:</span>
+                    <select id="pageSelector" class="border-2 border-gray-300 rounded px-3 py-1 bg-white">
+                        <option value="1">Pagina 1</option>
+                    </select>
+                    <button onclick="addNewPage()" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm font-semibold">
+                        + Aggiungi Pagina
+                    </button>
+                </div>
+                
+                <!-- Saved Documents -->
+                <div class="flex flex-wrap gap-2" id="savedDocuments">
+                    <span class="text-gray-500 text-sm">Nessun documento salvato</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Canvas Area -->
+        <div class="p-6 bg-gray-50 flex justify-center">
+            <canvas 
+                id="drawingCanvas" 
+                width="1200" 
+                height="800" 
+                class="border-4 border-gray-700 rounded-lg bg-white grid-bg disabled-cursor"
+            ></canvas>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="bg-gray-800 text-white p-3 text-sm">
+            <div class="flex justify-between items-center">
+                <span id="statusText">Modalità disegno: DISATTIVATA - Clicca "Inizia Disegno"</span>
+                <span id="strokeCount">Tratti: 0 | Pagine: 1</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Stato globale dell'applicazione
+        const AppState = {
+            canvas: null,
+            ctx: null,
+            isDrawingMode: false,
+            isDrawing: false,
+            currentDocument: {
+                name: null,
+                pages: { 1: [] },
+                currentPage: 1,
+                totalPages: 1
+            },
+            currentStroke: [],
+            lastPosition: { x: 0, y: 0 }
+        };
+
+        // Inizializzazione
+        function initializeApp() {
+            AppState.canvas = document.getElementById('drawingCanvas');
+            AppState.ctx = AppState.canvas.getContext('2d');
+            
+            setupCanvas();
+            setupEventListeners();
+            loadSavedDocuments();
+            updateUI();
+        }
+
+        function setupCanvas() {
+            AppState.ctx.lineCap = 'round';
+            AppState.ctx.lineJoin = 'round';
+            AppState.ctx.lineWidth = 2;
+            AppState.ctx.strokeStyle = '#1f2937';
+        }
+
+        function setupEventListeners() {
+            const canvas = AppState.canvas;
+            const toggleBtn = document.getElementById('toggleDraw');
+            const pageSelector = document.getElementById('pageSelector');
+
+            // Toggle drawing mode
+            toggleBtn.addEventListener('click', toggleDrawingMode);
+
+            // Page selector
+            pageSelector.addEventListener('change', switchPage);
+
+            // Mouse events
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseleave', stopDrawing);
+
+            // Touch events for mobile - only prevent default when drawing
+            canvas.addEventListener('touchstart', handleTouch, { passive: false });
+            canvas.addEventListener('touchmove', handleTouch, { passive: false });
+            canvas.addEventListener('touchend', stopDrawing, { passive: false });
+        }
+
+        function toggleDrawingMode() {
+            AppState.isDrawingMode = !AppState.isDrawingMode;
+            const toggleBtn = document.getElementById('toggleDraw');
+            const canvas = AppState.canvas;
+
+            if (AppState.isDrawingMode) {
+                toggleBtn.textContent = '⏹️ Ferma Disegno';
+                toggleBtn.className = 'bg-red-500 hover:bg-red-600 px-4 py-2 rounded font-semibold transition-colors';
+                canvas.className = 'border-4 border-green-500 rounded-lg bg-white grid-bg drawing-cursor';
+            } else {
+                toggleBtn.textContent = '🎨 Inizia Disegno';
+                toggleBtn.className = 'bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded font-semibold transition-colors';
+                canvas.className = 'border-4 border-gray-700 rounded-lg bg-white grid-bg disabled-cursor';
+                if (AppState.isDrawing) stopDrawing();
+            }
+            updateUI();
+        }
+
+        function getCanvasPosition(e) {
+            const rect = AppState.canvas.getBoundingClientRect();
+            const scaleX = AppState.canvas.width / rect.width;
+            const scaleY = AppState.canvas.height / rect.height;
+            
+            return {
+                x: (e.clientX - rect.left) * scaleX,
+                y: (e.clientY - rect.top) * scaleY
+            };
+        }
+
+        function startDrawing(e) {
+            if (!AppState.isDrawingMode) return;
+            
+            // Only prevent default for drawing actions
+            if (AppState.isDrawingMode) e.preventDefault();
+            AppState.isDrawing = true;
+            
+            const pos = getCanvasPosition(e);
+            AppState.lastPosition = pos;
+            AppState.currentStroke = [pos];
+            
+            AppState.ctx.beginPath();
+            AppState.ctx.moveTo(pos.x, pos.y);
+        }
+
+        function draw(e) {
+            if (!AppState.isDrawingMode || !AppState.isDrawing) return;
+            
+            // Only prevent default when actively drawing
+            if (AppState.isDrawing) e.preventDefault();
+            const pos = getCanvasPosition(e);
+            
+            AppState.currentStroke.push(pos);
+            AppState.ctx.lineTo(pos.x, pos.y);
+            AppState.ctx.stroke();
+            
+            AppState.lastPosition = pos;
+        }
+
+        function stopDrawing(e) {
+            if (!AppState.isDrawing) return;
+            
+            // Only prevent default if we were drawing
+            if (e && AppState.isDrawing) e.preventDefault();
+            AppState.isDrawing = false;
+            
+            if (AppState.currentStroke.length > 1) {
+                const currentPage = AppState.currentDocument.currentPage;
+                AppState.currentDocument.pages[currentPage].push([...AppState.currentStroke]);
+                updateUI();
+            }
+            
+            AppState.currentStroke = [];
+        }
+
+        function handleTouch(e) {
+            // Only prevent default if we're in drawing mode
+            if (AppState.isDrawingMode) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent(e.type === 'touchstart' ? 'mousedown' : 
+                                                e.type === 'touchmove' ? 'mousemove' : 'mouseup', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                });
+                AppState.canvas.dispatchEvent(mouseEvent);
+            }
+        }
+
+        function redrawCanvas() {
+            AppState.ctx.clearRect(0, 0, AppState.canvas.width, AppState.canvas.height);
+            
+            const currentPage = AppState.currentDocument.currentPage;
+            const strokes = AppState.currentDocument.pages[currentPage] || [];
+            
+            strokes.forEach(stroke => {
+                if (stroke.length > 1) {
+                    AppState.ctx.beginPath();
+                    AppState.ctx.moveTo(stroke[0].x, stroke[0].y);
+                    for (let i = 1; i < stroke.length; i++) {
+                        AppState.ctx.lineTo(stroke[i].x, stroke[i].y);
+                    }
+                    AppState.ctx.stroke();
+                }
+            });
+        }
+
+        function addNewPage() {
+            AppState.currentDocument.totalPages++;
+            const newPageNum = AppState.currentDocument.totalPages;
+            AppState.currentDocument.pages[newPageNum] = [];
+            
+            const pageSelector = document.getElementById('pageSelector');
+            const option = document.createElement('option');
+            option.value = newPageNum;
+            option.textContent = `Pagina ${newPageNum}`;
+            pageSelector.appendChild(option);
+            
+            pageSelector.value = newPageNum;
+            switchPage();
+        }
+
+        function switchPage() {
+            const pageSelector = document.getElementById('pageSelector');
+            AppState.currentDocument.currentPage = parseInt(pageSelector.value);
+            redrawCanvas();
+            updateUI();
+        }
+
+        function undoLastStroke() {
+            const currentPage = AppState.currentDocument.currentPage;
+            const strokes = AppState.currentDocument.pages[currentPage];
+            
+            if (strokes.length > 0) {
+                strokes.pop();
+                redrawCanvas();
+                updateUI();
+            }
+        }
+
+        function clearCurrentPage() {
+            if (confirm('Vuoi cancellare tutti i disegni di questa pagina?')) {
+                const currentPage = AppState.currentDocument.currentPage;
+                AppState.currentDocument.pages[currentPage] = [];
+                redrawCanvas();
+                updateUI();
+            }
+        }
+
+        function createNewDocument() {
+            const hasContent = Object.values(AppState.currentDocument.pages).some(page => page.length > 0);
+            
+            if (hasContent && !confirm('Creare un nuovo documento? Il lavoro attuale andrà perso se non salvato.')) {
+                return;
+            }
+            
+            AppState.currentDocument = {
+                name: null,
+                pages: { 1: [] },
+                currentPage: 1,
+                totalPages: 1
+            };
+            
+            const pageSelector = document.getElementById('pageSelector');
+            pageSelector.innerHTML = '<option value="1">Pagina 1</option>';
+            pageSelector.value = 1;
+            
+            if (AppState.isDrawingMode) toggleDrawingMode();
+            
+            redrawCanvas();
+            updateUI();
+            alert('📄 Nuovo documento creato!');
+        }
+
+        function saveDocument() {
+            const hasContent = Object.values(AppState.currentDocument.pages).some(page => page.length > 0);
+            
+            if (!hasContent) {
+                alert('⚠️ Il documento è vuoto! Disegna qualcosa prima di salvare.');
+                return;
+            }
+            
+            const name = prompt('Nome del documento:');
+            if (!name || name.trim() === '') return;
+            
+            const savedDocs = JSON.parse(localStorage.getItem('quadrettiDocuments') || '[]');
+            const existingIndex = savedDocs.findIndex(doc => doc.name === name.trim());
+            
+            if (existingIndex !== -1) {
+                if (!confirm(`Esiste già un documento "${name.trim()}". Sovrascrivere?`)) return;
+            }
+            
+            const documentData = {
+                name: name.trim(),
+                pages: JSON.parse(JSON.stringify(AppState.currentDocument.pages)),
+                totalPages: AppState.currentDocument.totalPages,
+                createdDate: new Date().toLocaleDateString('it-IT'),
+                timestamp: Date.now()
+            };
+            
+            if (existingIndex !== -1) {
+                savedDocs[existingIndex] = documentData;
+            } else {
+                savedDocs.push(documentData);
+            }
+            
+            localStorage.setItem('quadrettiDocuments', JSON.stringify(savedDocs));
+            AppState.currentDocument.name = name.trim();
+            
+            loadSavedDocuments();
+            updateUI();
+            alert(`✅ Documento "${name.trim()}" salvato con successo!`);
+        }
+
+        function loadDocument(index) {
+            const savedDocs = JSON.parse(localStorage.getItem('quadrettiDocuments') || '[]');
+            const doc = savedDocs[index];
+            
+            if (!doc) return;
+            
+            const hasContent = Object.values(AppState.currentDocument.pages).some(page => page.length > 0);
+            
+            if (hasContent && !confirm(`Caricare "${doc.name}"? Il lavoro attuale andrà perso se non salvato.`)) {
+                return;
+            }
+            
+            AppState.currentDocument = {
+                name: doc.name,
+                pages: JSON.parse(JSON.stringify(doc.pages)),
+                currentPage: 1,
+                totalPages: doc.totalPages
+            };
+            
+            const pageSelector = document.getElementById('pageSelector');
+            pageSelector.innerHTML = '';
+            for (let i = 1; i <= doc.totalPages; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `Pagina ${i}`;
+                pageSelector.appendChild(option);
+            }
+            pageSelector.value = 1;
+            
+            redrawCanvas();
+            updateUI();
+            alert(`📂 Documento "${doc.name}" caricato!`);
+        }
+
+        function deleteDocument(index) {
+            const savedDocs = JSON.parse(localStorage.getItem('quadrettiDocuments') || '[]');
+            const doc = savedDocs[index];
+            
+            if (!doc) return;
+            
+            if (confirm(`Eliminare definitivamente "${doc.name}"?\nPagine: ${doc.totalPages}\nCreato: ${doc.createdDate}`)) {
+                savedDocs.splice(index, 1);
+                localStorage.setItem('quadrettiDocuments', JSON.stringify(savedDocs));
+                loadSavedDocuments();
+                alert(`🗑️ Documento "${doc.name}" eliminato.`);
+            }
+        }
+
+        function loadSavedDocuments() {
+            const savedDocs = JSON.parse(localStorage.getItem('quadrettiDocuments') || '[]');
+            const container = document.getElementById('savedDocuments');
+            
+            if (savedDocs.length === 0) {
+                container.innerHTML = '<span class="text-gray-500 text-sm">Nessun documento salvato</span>';
+                return;
+            }
+            
+            container.innerHTML = savedDocs.map((doc, index) => `
+                <div class="flex items-center gap-2 bg-white border-2 border-gray-300 rounded px-3 py-1">
+                    <div class="flex flex-col">
+                        <span class="text-sm font-semibold text-gray-800 max-w-20 truncate" title="${doc.name}">${doc.name}</span>
+                        <span class="text-xs text-gray-500">${doc.totalPages} pag.</span>
+                    </div>
+                    <button onclick="loadDocument(${index})" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs" title="Carica">📁</button>
+                    <button onclick="deleteDocument(${index})" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs" title="Elimina">🗑️</button>
+                </div>
+            `).join('');
+        }
+
+        function updateUI() {
+            const statusText = document.getElementById('statusText');
+            const strokeCount = document.getElementById('strokeCount');
+            
+            const mode = AppState.isDrawingMode ? 'ATTIVATA' : 'DISATTIVATA';
+            const instruction = AppState.isDrawingMode ? 'Disegna sul canvas' : 'Clicca "Inizia Disegno"';
+            statusText.textContent = `Modalità disegno: ${mode} - ${instruction}`;
+            
+            const currentPageStrokes = AppState.currentDocument.pages[AppState.currentDocument.currentPage]?.length || 0;
+            const totalStrokes = Object.values(AppState.currentDocument.pages).reduce((sum, page) => sum + page.length, 0);
+            
+            strokeCount.textContent = `Tratti pagina: ${currentPageStrokes} | Totale: ${totalStrokes} | Pagine: ${AppState.currentDocument.totalPages}`;
+        }
+
+        // Avvia l'app
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'981d572c61e0ee74',t:'MTc1ODMyOTU1MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

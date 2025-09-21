@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quaderno a Righe per Bambini</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .lined-bg {
+            background-image: 
+                linear-gradient(to bottom, #2563eb 0px, #2563eb 2px, transparent 2px, transparent 30px, #94a3b8 30px, #94a3b8 31px, transparent 31px, transparent 60px),
+                linear-gradient(to right, #ef4444 80px, #ef4444 82px, transparent 82px);
+            background-size: 100% 60px, 100% 100%;
+            background-repeat: repeat-y, no-repeat;
+        }
+        
+        .writing-cursor {
+            cursor: crosshair;
+        }
+        
+        .disabled-cursor {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .kid-button {
+            font-size: 16px;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .kid-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-yellow-300 via-orange-300 to-red-300 min-h-screen p-4">
+    <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden border-4 border-blue-500">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6">
+            <div class="flex flex-wrap justify-between items-center gap-4">
+                <h1 class="text-3xl font-bold flex items-center gap-3">
+                    📝 Il Mio Quaderno a Righe
+                </h1>
+                <div class="flex flex-wrap gap-3">
+                    <button id="toggleWrite" class="kid-button bg-green-500 hover:bg-green-600 text-white">
+                        ✏️ Inizia a Scrivere
+                    </button>
+                    <button id="newNotebook" class="kid-button bg-blue-500 hover:bg-blue-600 text-white">
+                        📖 Nuovo Quaderno
+                    </button>
+                    <button id="saveNotebook" class="kid-button bg-yellow-500 hover:bg-yellow-600 text-white">
+                        💾 Salva Quaderno
+                    </button>
+                    <button id="undoLine" class="kid-button bg-orange-500 hover:bg-orange-600 text-white">
+                        ↶ Cancella Ultimo
+                    </button>
+                    <button id="clearPage" class="kid-button bg-red-500 hover:bg-red-600 text-white">
+                        🗑️ Pulisci Pagina
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page Controls -->
+        <div class="bg-gradient-to-r from-green-100 to-blue-100 p-4 border-b-4 border-blue-300">
+            <div class="flex flex-wrap justify-between items-center gap-4">
+                <div class="flex items-center gap-4">
+                    <span class="text-xl font-bold text-blue-800">📄 Pagina:</span>
+                    <select id="pageSelector" class="border-4 border-blue-300 rounded-lg px-4 py-2 bg-white text-lg font-semibold">
+                        <option value="1">Pagina 1</option>
+                    </select>
+                    <button id="addPage" class="kid-button bg-purple-500 hover:bg-purple-600 text-white text-sm">
+                        ➕ Nuova Pagina
+                    </button>
+                </div>
+                
+                <!-- Saved Notebooks -->
+                <div class="flex flex-wrap gap-2" id="savedNotebooks">
+                    <span class="text-gray-600 text-lg">📚 Nessun quaderno salvato</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Canvas Area -->
+        <div class="p-6 bg-gradient-to-b from-blue-50 to-green-50 flex justify-center">
+            <div class="bg-white border-4 border-red-400 rounded-lg shadow-lg p-4">
+                <canvas 
+                    id="writingCanvas" 
+                    width="1000" 
+                    height="700" 
+                    class="lined-bg disabled-cursor rounded-lg"
+                ></canvas>
+            </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-4 text-lg">
+            <div class="flex justify-between items-center">
+                <span id="statusText">✏️ Modalità scrittura: SPENTA - Clicca "Inizia a Scrivere"</span>
+                <span id="lineCount">Righe scritte: 0 | Pagine: 1</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Stato globale semplificato
+        let isWriting = false;
+        let isWritingMode = false;
+        let currentPage = 1;
+        let totalPages = 1;
+        let pages = { 1: [] };
+        let currentLine = [];
+        let canvas, ctx;
+
+        // Inizializzazione
+        document.addEventListener('DOMContentLoaded', function() {
+            canvas = document.getElementById('writingCanvas');
+            ctx = canvas.getContext('2d');
+            
+            // Setup canvas
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#1e40af';
+            
+            // Event listeners
+            setupEventListeners();
+            loadSavedNotebooks();
+            updateUI();
+        });
+
+        function setupEventListeners() {
+            // Buttons
+            document.getElementById('toggleWrite').addEventListener('click', toggleWritingMode);
+            document.getElementById('newNotebook').addEventListener('click', createNewNotebook);
+            document.getElementById('saveNotebook').addEventListener('click', saveNotebook);
+            document.getElementById('undoLine').addEventListener('click', undoLastLine);
+            document.getElementById('clearPage').addEventListener('click', clearCurrentPage);
+            document.getElementById('addPage').addEventListener('click', addNewPage);
+            document.getElementById('pageSelector').addEventListener('change', switchPage);
+
+            // Canvas events
+            canvas.addEventListener('mousedown', startWriting);
+            canvas.addEventListener('mousemove', writeOnCanvas);
+            canvas.addEventListener('mouseup', stopWriting);
+            canvas.addEventListener('mouseleave', stopWriting);
+
+            // Touch events
+            canvas.addEventListener('touchstart', handleTouch, { passive: false });
+            canvas.addEventListener('touchmove', handleTouch, { passive: false });
+            canvas.addEventListener('touchend', stopWriting, { passive: false });
+        }
+
+        function toggleWritingMode() {
+            isWritingMode = !isWritingMode;
+            const toggleBtn = document.getElementById('toggleWrite');
+            
+            if (isWritingMode) {
+                toggleBtn.textContent = '⏹️ Smetti di Scrivere';
+                toggleBtn.className = 'kid-button bg-red-500 hover:bg-red-600 text-white';
+                canvas.className = 'lined-bg writing-cursor rounded-lg border-4 border-green-400';
+            } else {
+                toggleBtn.textContent = '✏️ Inizia a Scrivere';
+                toggleBtn.className = 'kid-button bg-green-500 hover:bg-green-600 text-white';
+                canvas.className = 'lined-bg disabled-cursor rounded-lg';
+                if (isWriting) stopWriting();
+            }
+            updateUI();
+        }
+
+        function getCanvasPosition(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            
+            return {
+                x: (e.clientX - rect.left) * scaleX,
+                y: (e.clientY - rect.top) * scaleY
+            };
+        }
+
+        function startWriting(e) {
+            if (!isWritingMode) return;
+            
+            e.preventDefault();
+            isWriting = true;
+            
+            const pos = getCanvasPosition(e);
+            currentLine = [pos];
+            
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+        }
+
+        function writeOnCanvas(e) {
+            if (!isWritingMode || !isWriting) return;
+            
+            e.preventDefault();
+            const pos = getCanvasPosition(e);
+            
+            currentLine.push(pos);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+        }
+
+        function stopWriting(e) {
+            if (!isWriting) return;
+            
+            if (e) e.preventDefault();
+            isWriting = false;
+            
+            if (currentLine.length > 1) {
+                pages[currentPage].push([...currentLine]);
+                updateUI();
+            }
+            
+            currentLine = [];
+        }
+
+        function handleTouch(e) {
+            if (isWritingMode) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent(e.type === 'touchstart' ? 'mousedown' : 
+                                                e.type === 'touchmove' ? 'mousemove' : 'mouseup', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                });
+                canvas.dispatchEvent(mouseEvent);
+            }
+        }
+
+        function redrawCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const lines = pages[currentPage] || [];
+            
+            lines.forEach(line => {
+                if (line.length > 1) {
+                    ctx.beginPath();
+                    ctx.moveTo(line[0].x, line[0].y);
+                    for (let i = 1; i < line.length; i++) {
+                        ctx.lineTo(line[i].x, line[i].y);
+                    }
+                    ctx.stroke();
+                }
+            });
+        }
+
+        function addNewPage() {
+            totalPages++;
+            pages[totalPages] = [];
+            
+            const pageSelector = document.getElementById('pageSelector');
+            const option = document.createElement('option');
+            option.value = totalPages;
+            option.textContent = `Pagina ${totalPages}`;
+            pageSelector.appendChild(option);
+            
+            pageSelector.value = totalPages;
+            currentPage = totalPages;
+            redrawCanvas();
+            updateUI();
+            
+            alert('🎉 Nuova pagina aggiunta! Ora puoi scrivere qui!');
+        }
+
+        function switchPage() {
+            const pageSelector = document.getElementById('pageSelector');
+            currentPage = parseInt(pageSelector.value);
+            redrawCanvas();
+            updateUI();
+        }
+
+        function undoLastLine() {
+            if (!pages[currentPage] || pages[currentPage].length === 0) {
+                alert('📝 Non c\'è niente da cancellare in questa pagina!');
+                return;
+            }
+            
+            pages[currentPage].pop();
+            redrawCanvas();
+            updateUI();
+            alert('👍 Ultima riga cancellata!');
+        }
+
+        function clearCurrentPage() {
+            // Assicurati che la pagina esista
+            if (!pages[currentPage]) {
+                pages[currentPage] = [];
+            }
+            
+            if (pages[currentPage].length === 0) {
+                alert('📄 La pagina è già vuota!');
+                return;
+            }
+            
+            if (confirm('🤔 Vuoi davvero cancellare tutto quello che hai scritto in questa pagina?')) {
+                // Svuota completamente l'array
+                pages[currentPage].splice(0, pages[currentPage].length);
+                
+                // Pulisci il canvas completamente
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Aggiorna l'interfaccia
+                updateUI();
+                
+                alert('✨ Pagina pulita! Ora puoi ricominciare a scrivere!');
+            }
+        }
+
+        function createNewNotebook() {
+            const hasContent = Object.values(pages).some(page => page.length > 0);
+            
+            if (hasContent && !confirm('🤔 Vuoi creare un nuovo quaderno? Quello che hai scritto andrà perso se non lo salvi prima!')) {
+                return;
+            }
+            
+            // Reset tutto
+            pages = { 1: [] };
+            currentPage = 1;
+            totalPages = 1;
+            
+            const pageSelector = document.getElementById('pageSelector');
+            pageSelector.innerHTML = '<option value="1">Pagina 1</option>';
+            pageSelector.value = 1;
+            
+            if (isWritingMode) toggleWritingMode();
+            
+            redrawCanvas();
+            updateUI();
+            alert('📖 Nuovo quaderno creato! Buona scrittura!');
+        }
+
+        function saveNotebook() {
+            const hasContent = Object.values(pages).some(page => page.length > 0);
+            
+            if (!hasContent) {
+                alert('📝 Il quaderno è vuoto! Scrivi qualcosa prima di salvare.');
+                return;
+            }
+            
+            const name = prompt('🏷️ Come vuoi chiamare il tuo quaderno?');
+            if (!name || name.trim() === '') return;
+            
+            const savedNotebooks = JSON.parse(localStorage.getItem('kidsNotebooks') || '[]');
+            
+            const notebookData = {
+                name: name.trim(),
+                pages: JSON.parse(JSON.stringify(pages)),
+                totalPages: totalPages,
+                createdDate: new Date().toLocaleDateString('it-IT'),
+                timestamp: Date.now()
+            };
+            
+            savedNotebooks.push(notebookData);
+            localStorage.setItem('kidsNotebooks', JSON.stringify(savedNotebooks));
+            
+            loadSavedNotebooks();
+            updateUI();
+            alert(`🎉 Quaderno "${name.trim()}" salvato! Bravo/a!`);
+        }
+
+        function loadNotebook(index) {
+            const savedNotebooks = JSON.parse(localStorage.getItem('kidsNotebooks') || '[]');
+            const notebook = savedNotebooks[index];
+            
+            if (!notebook) return;
+            
+            const hasContent = Object.values(pages).some(page => page.length > 0);
+            
+            if (hasContent && !confirm(`📖 Vuoi aprire il quaderno "${notebook.name}"? Quello attuale andrà perso se non lo salvi!`)) {
+                return;
+            }
+            
+            pages = JSON.parse(JSON.stringify(notebook.pages));
+            currentPage = 1;
+            totalPages = notebook.totalPages;
+            
+            const pageSelector = document.getElementById('pageSelector');
+            pageSelector.innerHTML = '';
+            for (let i = 1; i <= totalPages; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `Pagina ${i}`;
+                pageSelector.appendChild(option);
+            }
+            pageSelector.value = 1;
+            
+            redrawCanvas();
+            updateUI();
+            alert(`📚 Quaderno "${notebook.name}" aperto! Continua a scrivere!`);
+        }
+
+        function deleteNotebook(index) {
+            const savedNotebooks = JSON.parse(localStorage.getItem('kidsNotebooks') || '[]');
+            const notebook = savedNotebooks[index];
+            
+            if (!notebook) return;
+            
+            if (confirm(`🗑️ Sei sicuro/a di voler buttare via il quaderno "${notebook.name}"?`)) {
+                savedNotebooks.splice(index, 1);
+                localStorage.setItem('kidsNotebooks', JSON.stringify(savedNotebooks));
+                loadSavedNotebooks();
+                alert(`🗑️ Quaderno "${notebook.name}" buttato via.`);
+            }
+        }
+
+        function loadSavedNotebooks() {
+            const savedNotebooks = JSON.parse(localStorage.getItem('kidsNotebooks') || '[]');
+            const container = document.getElementById('savedNotebooks');
+            
+            if (savedNotebooks.length === 0) {
+                container.innerHTML = '<span class="text-gray-600 text-lg">📚 Nessun quaderno salvato</span>';
+                return;
+            }
+            
+            container.innerHTML = savedNotebooks.map((notebook, index) => `
+                <div class="flex items-center gap-2 bg-white border-4 border-yellow-300 rounded-xl px-4 py-2 shadow-lg">
+                    <div class="flex flex-col">
+                        <span class="text-lg font-bold text-blue-800 max-w-24 truncate" title="${notebook.name}">📖 ${notebook.name}</span>
+                        <span class="text-sm text-purple-600">${notebook.totalPages} pagine</span>
+                    </div>
+                    <button onclick="loadNotebook(${index})" class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg text-sm font-bold">📂</button>
+                    <button onclick="deleteNotebook(${index})" class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg text-sm font-bold">🗑️</button>
+                </div>
+            `).join('');
+        }
+
+        function updateUI() {
+            const statusText = document.getElementById('statusText');
+            const lineCount = document.getElementById('lineCount');
+            
+            const mode = isWritingMode ? 'ACCESA' : 'SPENTA';
+            const instruction = isWritingMode ? 'Scrivi sul quaderno!' : 'Clicca "Inizia a Scrivere"';
+            statusText.textContent = `✏️ Modalità scrittura: ${mode} - ${instruction}`;
+            
+            const currentPageLines = pages[currentPage] ? pages[currentPage].length : 0;
+            const totalLines = Object.values(pages).reduce((sum, page) => sum + page.length, 0);
+            
+            lineCount.textContent = `Righe in questa pagina: ${currentPageLines} | Totale righe: ${totalLines} | Pagine: ${totalPages}`;
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'981d54ba175aee74',t:'MTc1ODMyOTQ1MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
