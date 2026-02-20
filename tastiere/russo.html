@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="ru" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Russian Text Editor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&amp;family=Cormorant+Garamond:wght@600;700&amp;display=swap" rel="stylesheet">
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    
+    .editor-container {
+      background: linear-gradient(135deg, #1a1a2e 0%, #2d1b3d 50%, #1e2a4a 100%);
+    }
+    
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .text-editor {
+      font-family: 'Noto Sans', sans-serif;
+      line-height: 1.9;
+      caret-color: #d62839;
+    }
+    
+    .text-editor:focus {
+      outline: none;
+    }
+    
+    .text-editor::placeholder {
+      color: rgba(255, 255, 255, 0.3);
+    }
+    
+    .tool-btn {
+      transition: all 0.2s ease;
+    }
+    
+    .tool-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: scale(1.05);
+    }
+    
+    .tool-btn.active {
+      background: rgba(214, 40, 57, 0.3);
+      color: #d62839;
+    }
+    
+    .character-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+      gap: 8px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    
+    .character-grid::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .character-grid::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 3px;
+    }
+    
+    .character-grid::-webkit-scrollbar-thumb {
+      background: rgba(214, 40, 57, 0.5);
+      border-radius: 3px;
+    }
+    
+    .char-btn {
+      transition: all 0.2s ease;
+      font-size: 1.25rem;
+    }
+    
+    .char-btn:hover {
+      background: rgba(214, 40, 57, 0.3);
+      transform: scale(1.1);
+    }
+    
+    .category-btn.active {
+      background: rgba(214, 40, 57, 0.5);
+      color: #fff;
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .word-count {
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full m-0 p-0">
+  <div class="editor-container h-full w-full overflow-auto">
+   <div class="min-h-full w-full p-4 md:p-8">
+    <div class="max-w-4xl mx-auto"><!-- Header -->
+     <header class="text-center mb-8 fade-in">
+      <h1 id="editor-title" class="text-3xl md:text-4xl font-semibold text-white mb-2" style="font-family: 'Cormorant Garamond', serif;">Russian Text Editor</h1>
+      <p class="text-gray-400 text-sm">Write beautifully in Russian - Пишите красиво по-русски</p>
+     </header><!-- Language Display -->
+     <div class="flex justify-center mb-6 fade-in" style="animation-delay: 0.1s;">
+      <div class="px-6 py-3 rounded-xl text-white font-medium text-base flex items-center gap-3" style="background: linear-gradient(135deg, #d62839 0%, #0039a6 100%); box-shadow: 0 4px 20px rgba(214, 40, 57, 0.4);"><span class="text-2xl">🇷🇺</span> <span>Русский Russian</span>
+      </div>
+     </div><!-- Main Editor Panel -->
+     <div class="glass-panel rounded-2xl overflow-hidden fade-in" style="animation-delay: 0.2s;"><!-- Toolbar -->
+      <div class="flex items-center gap-1 p-3 border-b border-white/10 flex-wrap"><button class="tool-btn p-2 rounded-lg text-white/70" onclick="formatText('bold')" title="Bold" aria-label="Bold">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 4h8a4 4 0 014 4 4 4 0 01-4 4H6z"></path> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 12h9a4 4 0 014 4 4 4 0 01-4 4H6z"></path>
+        </svg></button> <button class="tool-btn p-2 rounded-lg text-white/70" onclick="formatText('italic')" title="Italic" aria-label="Italic">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 4h4m-2 0v16m-4 0h8"></path>
+        </svg></button> <button class="tool-btn p-2 rounded-lg text-white/70" onclick="formatText('underline')" title="Underline" aria-label="Underline">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 5v7a5 5 0 0010 0V5M5 19h14"></path>
+        </svg></button>
+       <div class="w-px h-6 bg-white/20 mx-2"></div><button class="tool-btn p-2 rounded-lg text-white/70" onclick="changeFontSize('increase')" title="Increase Size" aria-label="Increase font size">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6"></path>
+        </svg></button> <button class="tool-btn p-2 rounded-lg text-white/70" onclick="changeFontSize('decrease')" title="Decrease Size" aria-label="Decrease font size">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12H6"></path>
+        </svg></button>
+       <div class="w-px h-6 bg-white/20 mx-2"></div><button class="tool-btn p-2 rounded-lg text-white/70" onclick="clearEditor()" title="Clear" aria-label="Clear text">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+        </svg></button> <button class="tool-btn p-2 rounded-lg text-white/70" onclick="copyText()" title="Copy" aria-label="Copy text">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+        </svg></button> <button class="tool-btn p-2 rounded-lg text-white/70" onclick="exportText()" title="Export as TXT" aria-label="Export text file">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg></button>
+       <div class="ml-auto flex items-center gap-2"><span id="word-count" class="word-count text-xs text-white/50 px-3 py-1 bg-white/5 rounded-full">0 chars</span>
+       </div>
+      </div><!-- Text Area -->
+      <div class="p-4">
+       <div id="text-editor" class="text-editor w-full min-h-[250px] bg-transparent text-white text-lg resize-none" contenteditable="true" role="textbox" aria-label="Russian text editor" data-placeholder="Начните печатать здесь..."></div>
+      </div>
+     </div><!-- Character Palette -->
+     <div class="glass-panel rounded-2xl mt-6 p-4 fade-in" style="animation-delay: 0.3s;">
+      <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+       <h3 id="palette-title" class="text-white font-medium">Russian Characters - Русские буквы</h3>
+       <div class="flex gap-2 flex-wrap"><button class="category-btn active text-xs px-3 py-1.5 rounded-full bg-white/10 text-white/70 hover:bg-white/20 transition-all" onclick="showCategory('lowercase')">Lowercase</button> <button class="category-btn text-xs px-3 py-1.5 rounded-full bg-white/10 text-white/70 hover:bg-white/20 transition-all" onclick="showCategory('uppercase')">Uppercase</button> <button class="category-btn text-xs px-3 py-1.5 rounded-full bg-white/10 text-white/70 hover:bg-white/20 transition-all" onclick="showCategory('special')">Special</button> <button class="category-btn text-xs px-3 py-1.5 rounded-full bg-white/10 text-white/70 hover:bg-white/20 transition-all" onclick="showCategory('punctuation')">Punctuation</button>
+       </div>
+      </div>
+      <div id="character-palette" class="character-grid"><!-- Characters will be populated by JavaScript -->
+      </div>
+     </div><!-- Quick Phrases -->
+     <div class="glass-panel rounded-2xl mt-6 p-4 fade-in" style="animation-delay: 0.4s;">
+      <h3 class="text-white font-medium mb-3">Quick Phrases - Частые фразы</h3>
+      <div id="quick-phrases" class="flex flex-wrap gap-2"><!-- Phrases will be populated by JavaScript -->
+      </div>
+     </div>
+    </div>
+   </div>
+  </div><!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-4 right-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-2 rounded-xl shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 text-sm">
+   Copied to clipboard!
+  </div>
+  <script>
+    // Default configuration
+    const defaultConfig = {
+      editor_title: 'Russian Text Editor',
+      placeholder_text: 'Start typing here...',
+      background_color: '#1a1a2e',
+      surface_color: 'rgba(255, 255, 255, 0.04)',
+      text_color: '#ffffff',
+      primary_action: '#d62839',
+      secondary_action: '#0039a6',
+      font_family: 'Cormorant Garamond',
+      font_size: 16
+    };
+
+    let config = { ...defaultConfig };
+    let currentFontSize = 18;
+    let currentCategory = 'lowercase';
+
+    // Russian character data - Complete Cyrillic alphabet
+    const russianData = {
+      lowercase: [
+        '\u0430', '\u0431', '\u0432', '\u0433', '\u0434', '\u0435', '\u0451',
+        '\u0436', '\u0437', '\u0438', '\u0439', '\u043A', '\u043B', '\u043C',
+        '\u043D', '\u043E', '\u043F', '\u0440', '\u0441', '\u0442', '\u0443',
+        '\u0444', '\u0445', '\u0446', '\u0447', '\u0448', '\u0449', '\u044A',
+        '\u044B', '\u044C', '\u044D', '\u044E', '\u044F'
+      ],
+      uppercase: [
+        '\u0410', '\u0411', '\u0412', '\u0413', '\u0414', '\u0415', '\u0401',
+        '\u0416', '\u0417', '\u0418', '\u0419', '\u041A', '\u041B', '\u041C',
+        '\u041D', '\u041E', '\u041F', '\u0420', '\u0421', '\u0422', '\u0423',
+        '\u0424', '\u0425', '\u0426', '\u0427', '\u0428', '\u0429', '\u042A',
+        '\u042B', '\u042C', '\u042D', '\u042E', '\u042F'
+      ],
+      special: [
+        '\u0451', '\u0401', '\u044A', '\u042A', '\u044C', '\u042C',
+        '\u044B', '\u042B', '\u044D', '\u042D', '\u044E', '\u042E',
+        '\u044F', '\u042F', '\u0439', '\u0419'
+      ],
+      punctuation: [
+        '.', ',', '!', '?', ':', ';', '-', '—', '«', '»',
+        '(', ')', '[', ']', '...', '–'
+      ],
+      phrases: [
+        '\u041F\u0440\u0438\u0432\u0435\u0442',
+        '\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439\u0442\u0435',
+        '\u0421\u043F\u0430\u0441\u0438\u0431\u043E',
+        '\u0414\u043E \u0441\u0432\u0438\u0434\u0430\u043D\u0438\u044F',
+        '\u041F\u043E\u0436\u0430\u043B\u0443\u0439\u0441\u0442\u0430',
+        '\u0418\u0437\u0432\u0438\u043D\u0438\u0442\u0435',
+        '\u041A\u0430\u043A \u0434\u0435\u043B\u0430?',
+        '\u041A\u0430\u043A \u0432\u0430\u0441 \u0437\u043E\u0432\u0443\u0442?',
+        '\u041E\u0447\u0435\u043D\u044C \u043F\u0440\u0438\u044F\u0442\u043D\u043E',
+        '\u0414\u043E\u0431\u0440\u043E\u0435 \u0443\u0442\u0440\u043E',
+        '\u0414\u043E\u0431\u0440\u044B\u0439 \u0434\u0435\u043D\u044C',
+        '\u0414\u043E\u0431\u0440\u044B\u0439 \u0432\u0435\u0447\u0435\u0440',
+        '\u0421\u043F\u043E\u043A\u043E\u0439\u043D\u043E\u0439 \u043D\u043E\u0447\u0438',
+        '\u0414\u043E \u0432\u0441\u0442\u0440\u0435\u0447\u0438',
+        '\u0425\u043E\u0440\u043E\u0448\u043E',
+        '\u041F\u043E\u043D\u044F\u0442\u043D\u043E',
+        '\u0421\u0435\u0433\u043E\u0434\u043D\u044F',
+        '\u0417\u0430\u0432\u0442\u0440\u0430',
+        '\u0412\u0447\u0435\u0440\u0430'
+      ]
+    };
+
+    // Initialize
+    function init() {
+      showCategory('lowercase');
+      updateQuickPhrases();
+      setupEditor();
+    }
+
+    function showCategory(category) {
+      currentCategory = category;
+      const palette = document.getElementById('character-palette');
+      let chars = russianData[category] || [];
+      
+      // Update active button
+      document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      
+      // Find and activate the clicked button
+      const buttons = document.querySelectorAll('.category-btn');
+      buttons.forEach(btn => {
+        if (btn.textContent.toLowerCase().includes(category.toLowerCase())) {
+          btn.classList.add('active');
+        }
+      });
+      
+      palette.innerHTML = chars.map(char => `
+        <button class="char-btn glass-panel w-12 h-12 rounded-xl text-white flex items-center justify-center hover:text-red-400" onclick="insertCharacter('${char}')" aria-label="Insert ${char}">
+          ${char}
+        </button>
+      `).join('');
+    }
+
+    function updateQuickPhrases() {
+      const container = document.getElementById('quick-phrases');
+      const phrases = russianData.phrases;
+      
+      container.innerHTML = phrases.map(phrase => `
+        <button class="px-4 py-2 rounded-xl glass-panel text-white/80 text-sm hover:bg-white/10 transition-all" onclick="insertPhrase('${phrase}')">
+          ${phrase}
+        </button>
+      `).join('');
+    }
+
+    function setupEditor() {
+      const editor = document.getElementById('text-editor');
+      
+      editor.addEventListener('input', function() {
+        updateWordCount();
+      });
+      
+      updatePlaceholder();
+    }
+
+    function updatePlaceholder() {
+      const editor = document.getElementById('text-editor');
+      if (editor.textContent === '') {
+        editor.innerHTML = '';
+      }
+    }
+
+    function insertCharacter(char) {
+      const editor = document.getElementById('text-editor');
+      editor.focus();
+      document.execCommand('insertText', false, char);
+      updateWordCount();
+    }
+
+    function insertPhrase(phrase) {
+      const editor = document.getElementById('text-editor');
+      editor.focus();
+      document.execCommand('insertText', false, phrase);
+      updateWordCount();
+    }
+
+    function formatText(command) {
+      document.execCommand(command, false, null);
+    }
+
+    function changeFontSize(direction) {
+      const editor = document.getElementById('text-editor');
+      if (direction === 'increase') {
+        currentFontSize = Math.min(currentFontSize + 2, 36);
+      } else {
+        currentFontSize = Math.max(currentFontSize - 2, 12);
+      }
+      editor.style.fontSize = currentFontSize + 'px';
+    }
+
+    function clearEditor() {
+      const editor = document.getElementById('text-editor');
+      editor.innerHTML = '';
+      updateWordCount();
+    }
+
+    function copyText() {
+      const editor = document.getElementById('text-editor');
+      const text = editor.textContent;
+      
+      if (!text || text.trim() === '') {
+        showToast('No text to copy');
+        return;
+      }
+      
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast('Copied to clipboard!');
+        }).catch((err) => {
+          fallbackCopy(text);
+        });
+      } else {
+        fallbackCopy(text);
+      }
+    }
+    
+    function fallbackCopy(text) {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      
+      try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+          showToast('Copied to clipboard!');
+        } else {
+          showToast('Copy failed');
+        }
+      } catch (err) {
+        showToast('Copy failed');
+      }
+      
+      document.body.removeChild(textarea);
+    }
+
+    function exportText() {
+      const editor = document.getElementById('text-editor');
+      const text = editor.textContent;
+      
+      if (!text || text.trim() === '') {
+        showToast('No text to export');
+        return;
+      }
+      
+      // Add UTF-8 BOM to ensure proper encoding
+      const BOM = '\uFEFF';
+      const textWithBOM = BOM + text;
+      
+      const blob = new Blob([textWithBOM], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      const date = new Date();
+      const filename = `russian-text-${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}.txt`;
+      link.download = filename;
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      showToast('Text exported!');
+    }
+
+    function updateWordCount() {
+      const editor = document.getElementById('text-editor');
+      const text = editor.textContent;
+      const count = text.length;
+      document.getElementById('word-count').textContent = `${count} chars`;
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 2000);
+    }
+
+    // Element SDK Integration
+    async function onConfigChange(cfg) {
+      config = { ...defaultConfig, ...cfg };
+      
+      const title = document.getElementById('editor-title');
+      title.textContent = config.editor_title || defaultConfig.editor_title;
+      title.style.fontFamily = `${config.font_family || defaultConfig.font_family}, serif`;
+      
+      const baseSize = config.font_size || defaultConfig.font_size;
+      title.style.fontSize = `${baseSize * 2}px`;
+      
+      const editor = document.getElementById('text-editor');
+      editor.setAttribute('data-placeholder', config.placeholder_text || defaultConfig.placeholder_text);
+    }
+
+    function mapToCapabilities(cfg) {
+      return {
+        recolorables: [
+          {
+            get: () => cfg.background_color || defaultConfig.background_color,
+            set: (value) => { cfg.background_color = value; window.elementSdk.setConfig({ background_color: value }); }
+          },
+          {
+            get: () => cfg.surface_color || defaultConfig.surface_color,
+            set: (value) => { cfg.surface_color = value; window.elementSdk.setConfig({ surface_color: value }); }
+          },
+          {
+            get: () => cfg.text_color || defaultConfig.text_color,
+            set: (value) => { cfg.text_color = value; window.elementSdk.setConfig({ text_color: value }); }
+          },
+          {
+            get: () => cfg.primary_action || defaultConfig.primary_action,
+            set: (value) => { cfg.primary_action = value; window.elementSdk.setConfig({ primary_action: value }); }
+          },
+          {
+            get: () => cfg.secondary_action || defaultConfig.secondary_action,
+            set: (value) => { cfg.secondary_action = value; window.elementSdk.setConfig({ secondary_action: value }); }
+          }
+        ],
+        borderables: [],
+        fontEditable: {
+          get: () => cfg.font_family || defaultConfig.font_family,
+          set: (value) => { cfg.font_family = value; window.elementSdk.setConfig({ font_family: value }); }
+        },
+        fontSizeable: {
+          get: () => cfg.font_size || defaultConfig.font_size,
+          set: (value) => { cfg.font_size = value; window.elementSdk.setConfig({ font_size: value }); }
+        }
+      };
+    }
+
+    function mapToEditPanelValues(cfg) {
+      return new Map([
+        ['editor_title', cfg.editor_title || defaultConfig.editor_title],
+        ['placeholder_text', cfg.placeholder_text || defaultConfig.placeholder_text]
+      ]);
+    }
+
+    // Initialize SDK
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities,
+        mapToEditPanelValues
+      });
+    }
+
+    // Start the app
+    init();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c7dca65d1624c3e',t:'MTc3MDA3ODMyMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

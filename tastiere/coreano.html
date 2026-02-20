@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="ko" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Korean Text Editor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&amp;family=Playfair+Display:wght@600;700&amp;display=swap" rel="stylesheet">
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    
+    .editor-container {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    }
+    
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    
+    .text-editor {
+      font-family: 'Noto Sans KR', sans-serif;
+      line-height: 1.8;
+      caret-color: #e94560;
+    }
+    
+    .text-editor:focus {
+      outline: none;
+    }
+    
+    .text-editor::placeholder {
+      color: rgba(255, 255, 255, 0.3);
+    }
+    
+    .tool-btn {
+      transition: all 0.2s ease;
+    }
+    
+    .tool-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: scale(1.05);
+    }
+    
+    .tool-btn.active {
+      background: rgba(233, 69, 96, 0.3);
+      color: #e94560;
+    }
+    
+    .character-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+      gap: 8px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .character-grid::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .character-grid::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 3px;
+    }
+    
+    .character-grid::-webkit-scrollbar-thumb {
+      background: rgba(233, 69, 96, 0.5);
+      border-radius: 3px;
+    }
+    
+    .char-btn {
+      transition: all 0.2s ease;
+      font-size: 1.25rem;
+    }
+    
+    .char-btn:hover {
+      background: rgba(233, 69, 96, 0.3);
+      transform: scale(1.1);
+    }
+    
+    .category-btn.active {
+      background: rgba(233, 69, 96, 0.4);
+      color: #fff;
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .word-count {
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full m-0 p-0">
+  <div class="editor-container h-full w-full overflow-auto">
+   <div class="min-h-full w-full p-4 md:p-8">
+    <div class="max-w-4xl mx-auto"><!-- Header -->
+     <header class="text-center mb-8 fade-in">
+      <h1 id="editor-title" class="text-3xl md:text-4xl font-semibold text-white mb-2" style="font-family: 'Playfair Display', serif;">Korean Text Editor</h1>
+      <p class="text-gray-400 text-sm">Write beautifully in Korean - 한글로 아름답게 쓰세요</p>
+     </header><!-- Language Display -->
+     <div class="flex justify-center mb-6 fade-in" style="animation-delay: 0.1s;">
+      <div class="px-6 py-3 rounded-xl text-white font-medium text-base flex items-center gap-3" style="background: linear-gradient(135deg, #e94560 0%, #ff6b6b 100%); box-shadow: 0 4px 20px rgba(233, 69, 96, 0.4);"><span class="text-2xl">🇰🇷</span> <span>한국어 Korean</span>
+      </div>
+     </div><!-- Main Editor Panel -->
+     <div class="glass-panel rounded-2xl overflow-hidden fade-in" style="animation-delay: 0.2s;"><!-- Toolbar -->
+      <div class="flex items-center gap-1 p-3 border-b border-white/10 flex-wrap"><button class="tool-btn p-2 rounded-lg text-white/70" onclick="formatText('bold')" title="Bold" aria-label="Bold">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 4h8a4 4 0 014 4 4 4 0 01-4 4H6z"></path> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 12h9a4 4 0 014 4 4 4 0 01-4 4H6z"></path>
+        </svg></button> <button class="tool-btn p-2 rounded-lg text-white/70" onclick="formatText('italic')" title="Italic" aria-label="Italic">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 4h4m-2 0v16m-4 0h8"></path>
+        </svg></button> <button class="tool-btn p-2 rounded-lg text-white/70" onclick="formatText('underline')" title="Underline" aria-label="Underline">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 5v7a5 5 0 0010 0V5M5 19h14"></path>
+        </svg></button>
+       <div class="w-px h-6 bg-white/20 mx-2"></div><button class="tool-btn p-2 rounded-lg text-white/70" onclick="changeFontSize('increase')" title="Increase Size" aria-label="Increase font size">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12m6-6H6"></path>
+        </svg></button> <button class="tool-btn p-2 rounded-lg text-white/70" onclick="changeFontSize('decrease')" title="Decrease Size" aria-label="Decrease font size">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12H6"></path>
+        </svg></button>
+       <div class="w-px h-6 bg-white/20 mx-2"></div><button class="tool-btn p-2 rounded-lg text-white/70" onclick="clearEditor()" title="Clear" aria-label="Clear text">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+        </svg></button> <button class="tool-btn p-2 rounded-lg text-white/70" onclick="copyText()" title="Copy" aria-label="Copy text">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+        </svg></button> <button class="tool-btn p-2 rounded-lg text-white/70" onclick="exportText()" title="Export as TXT" aria-label="Export text file">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg></button>
+       <div class="ml-auto flex items-center gap-2"><span id="word-count" class="word-count text-xs text-white/50 px-3 py-1 bg-white/5 rounded-full">0 chars</span>
+       </div>
+      </div><!-- Text Area -->
+      <div class="p-4">
+       <div id="text-editor" class="text-editor w-full min-h-[250px] bg-transparent text-white text-lg resize-none" contenteditable="true" role="textbox" aria-label="Korean text editor" data-placeholder="여기에 입력하세요..."></div>
+      </div>
+     </div><!-- Character Palette -->
+     <div class="glass-panel rounded-2xl mt-6 p-4 fade-in" style="animation-delay: 0.3s;">
+      <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+       <h3 id="palette-title" class="text-white font-medium">Korean Characters - 한글</h3>
+       <div class="flex gap-2 flex-wrap"><button class="category-btn active text-xs px-3 py-1.5 rounded-full bg-white/10 text-white/70 hover:bg-white/20 transition-all" onclick="showCategory('consonants')">Consonants</button> <button class="category-btn text-xs px-3 py-1.5 rounded-full bg-white/10 text-white/70 hover:bg-white/20 transition-all" onclick="showCategory('vowels')">Vowels</button> <button class="category-btn text-xs px-3 py-1.5 rounded-full bg-white/10 text-white/70 hover:bg-white/20 transition-all" onclick="showCategory('doubles')">Doubles</button> <button class="category-btn text-xs px-3 py-1.5 rounded-full bg-white/10 text-white/70 hover:bg-white/20 transition-all" onclick="showCategory('punctuation')">Punctuation</button>
+       </div>
+      </div>
+      <div id="character-palette" class="character-grid"><!-- Characters will be populated by JavaScript -->
+      </div>
+     </div><!-- Quick Phrases -->
+     <div class="glass-panel rounded-2xl mt-6 p-4 fade-in" style="animation-delay: 0.4s;">
+      <h3 class="text-white font-medium mb-3">Quick Phrases - 자주 쓰는 표현</h3>
+      <div id="quick-phrases" class="flex flex-wrap gap-2"><!-- Phrases will be populated by JavaScript -->
+      </div>
+     </div>
+    </div>
+   </div>
+  </div><!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-4 right-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-2 rounded-xl shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 text-sm">
+   Copied to clipboard!
+  </div>
+  <script>
+    // Default configuration
+    const defaultConfig = {
+      editor_title: 'Korean Text Editor',
+      placeholder_text: 'Start typing here...',
+      background_color: '#1a1a2e',
+      surface_color: 'rgba(255, 255, 255, 0.03)',
+      text_color: '#ffffff',
+      primary_action: '#e94560',
+      secondary_action: '#ff6b6b',
+      font_family: 'Playfair Display',
+      font_size: 16
+    };
+
+    let config = { ...defaultConfig };
+    let currentFontSize = 18;
+    let currentCategory = 'consonants';
+
+    // Korean character data - Complete Hangul Jamo
+    const koreanData = {
+      consonants: ['\u3131', '\u3134', '\u3137', '\u3139', '\u3141', '\u3142', '\u3145', '\u3147', '\u3148', '\u314A', '\u314B', '\u314C', '\u314D', '\u314E'],
+      vowels: ['\u314F', '\u3151', '\u3153', '\u3155', '\u3157', '\u315B', '\u315C', '\u3160', '\u3161', '\u3163'],
+      doubles: [
+        '\u3132', '\u3138', '\u3143', '\u3146', '\u3149',
+        '\u3150', '\u3152', '\u3154', '\u3156',
+        '\u3158', '\u3159', '\u315A',
+        '\u315D', '\u315E', '\u315F',
+        '\u3162'
+      ],
+      punctuation: ['\u3002', '\u3001', '\uFF01', '\uFF1F', '\u300C', '\u300D', '\u300E', '\u300F', '\u00B7', '\u2026', '~', '\u2014', ':', ';', ',', '.'],
+      phrases: [
+        '\uC548\uB155\uD558\uC138\uC694',
+        '\uAC10\uC0AC\uD569\uB2C8\uB2E4',
+        '\uC0AC\uB791\uD574\uC694',
+        '\uC88B\uC544\uC694',
+        '\uBBF8\uC548\uD574\uC694',
+        '\uAD1C\uCC2E\uC544\uC694',
+        '\uC798 \uC9C0\uB0B4\uC694?',
+        '\uB9CC\uB098\uC11C \uBC18\uAC00\uC6CC\uC694',
+        '\uC624\uB298',
+        '\uB0B4\uC77C',
+        '\uC5B4\uC81C',
+        '\uC9C0\uAE08',
+        '\uC544\uCE68',
+        '\uC810\uC2EC',
+        '\uC800\uB141',
+        '\uB9DB\uC788\uC5B4\uC694',
+        '\uACE0\uB9C8\uC6CC\uC694',
+        '\uCD95\uD558\uD569\uB2C8\uB2E4'
+      ]
+    };
+
+    // Initialize
+    function init() {
+      showCategory('consonants');
+      updateQuickPhrases();
+      setupEditor();
+    }
+
+    function showCategory(category) {
+      currentCategory = category;
+      const palette = document.getElementById('character-palette');
+      let chars = koreanData[category] || [];
+      
+      // Update active button
+      document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      
+      // Find and activate the clicked button
+      const buttons = document.querySelectorAll('.category-btn');
+      buttons.forEach(btn => {
+        if (btn.textContent.toLowerCase().includes(category.toLowerCase())) {
+          btn.classList.add('active');
+        }
+      });
+      
+      palette.innerHTML = chars.map(char => `
+        <button class="char-btn glass-panel w-12 h-12 rounded-xl text-white flex items-center justify-center hover:text-pink-400" onclick="insertCharacter('${char}')" aria-label="Insert ${char}">
+          ${char}
+        </button>
+      `).join('');
+    }
+
+    function updateQuickPhrases() {
+      const container = document.getElementById('quick-phrases');
+      const phrases = koreanData.phrases;
+      
+      container.innerHTML = phrases.map(phrase => `
+        <button class="px-4 py-2 rounded-xl glass-panel text-white/80 text-sm hover:bg-white/10 transition-all" onclick="insertPhrase('${phrase}')">
+          ${phrase}
+        </button>
+      `).join('');
+    }
+
+    function setupEditor() {
+      const editor = document.getElementById('text-editor');
+      
+      editor.addEventListener('input', function() {
+        updateWordCount();
+      });
+      
+      updatePlaceholder();
+    }
+
+    function updatePlaceholder() {
+      const editor = document.getElementById('text-editor');
+      if (editor.textContent === '') {
+        editor.innerHTML = '';
+      }
+    }
+
+    function insertCharacter(char) {
+      const editor = document.getElementById('text-editor');
+      editor.focus();
+      
+      // Get current text and cursor position
+      const selection = window.getSelection();
+      const range = selection.getRangeAt(0);
+      const textNode = range.startContainer;
+      const offset = range.startOffset;
+      
+      // Try to combine with previous character if possible
+      if (textNode.nodeType === Node.TEXT_NODE && offset > 0) {
+        const prevChar = textNode.textContent[offset - 1];
+        const combined = combineHangul(prevChar, char);
+        
+        if (combined) {
+          // Replace previous character with combined syllable
+          const beforeText = textNode.textContent.substring(0, offset - 1);
+          const afterText = textNode.textContent.substring(offset);
+          textNode.textContent = beforeText + combined + afterText;
+          
+          // Set cursor after combined character
+          range.setStart(textNode, offset);
+          range.setEnd(textNode, offset);
+          selection.removeAllRanges();
+          selection.addRange(range);
+          updateWordCount();
+          return;
+        }
+      }
+      
+      // If no combination possible, just insert
+      document.execCommand('insertText', false, char);
+      updateWordCount();
+    }
+    
+    // Hangul composition function
+    function combineHangul(prev, curr) {
+      const HANGUL_BASE = 0xAC00;
+      const JAMO_L_BASE = 0x1100;
+      const JAMO_V_BASE = 0x1161;
+      const JAMO_T_BASE = 0x11A7;
+      
+      const CONSONANTS = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+      const VOWELS = ['ㅏ','ㅐ','ㅑ','ㅒ','ㅓ','ㅔ','ㅕ','ㅖ','ㅗ','ㅘ','ㅙ','ㅚ','ㅛ','ㅜ','ㅝ','ㅞ','ㅟ','ㅠ','ㅡ','ㅢ','ㅣ'];
+      const FINALS = ['','ㄱ','ㄲ','ㄳ','ㄴ','ㄵ','ㄶ','ㄷ','ㄹ','ㄺ','ㄻ','ㄼ','ㄽ','ㄾ','ㄿ','ㅀ','ㅁ','ㅂ','ㅄ','ㅅ','ㅆ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+      
+      const prevCode = prev.charCodeAt(0);
+      
+      // Check if prev is a complete Hangul syllable
+      if (prevCode >= HANGUL_BASE && prevCode <= 0xD7A3) {
+        const syllableIndex = prevCode - HANGUL_BASE;
+        const l = Math.floor(syllableIndex / 588);
+        const v = Math.floor((syllableIndex % 588) / 28);
+        const t = syllableIndex % 28;
+        
+        // If no final consonant and curr is final consonant
+        if (t === 0 && FINALS.indexOf(curr) > 0) {
+          const newIndex = l * 588 + v * 28 + FINALS.indexOf(curr);
+          return String.fromCharCode(HANGUL_BASE + newIndex);
+        }
+        
+        return null;
+      }
+      
+      // Check if prev is initial consonant and curr is vowel
+      const lIndex = CONSONANTS.indexOf(prev);
+      const vIndex = VOWELS.indexOf(curr);
+      
+      if (lIndex >= 0 && vIndex >= 0) {
+        const syllableIndex = lIndex * 588 + vIndex * 28;
+        return String.fromCharCode(HANGUL_BASE + syllableIndex);
+      }
+      
+      return null;
+    }
+
+    function insertPhrase(phrase) {
+      const editor = document.getElementById('text-editor');
+      editor.focus();
+      document.execCommand('insertText', false, phrase);
+      updateWordCount();
+    }
+
+    function formatText(command) {
+      document.execCommand(command, false, null);
+    }
+
+    function changeFontSize(direction) {
+      const editor = document.getElementById('text-editor');
+      if (direction === 'increase') {
+        currentFontSize = Math.min(currentFontSize + 2, 36);
+      } else {
+        currentFontSize = Math.max(currentFontSize - 2, 12);
+      }
+      editor.style.fontSize = currentFontSize + 'px';
+    }
+
+    function clearEditor() {
+      const editor = document.getElementById('text-editor');
+      editor.innerHTML = '';
+      updateWordCount();
+    }
+
+    function copyText() {
+      const editor = document.getElementById('text-editor');
+      const text = editor.textContent;
+      
+      if (!text || text.trim() === '') {
+        showToast('No text to copy');
+        return;
+      }
+      
+      // Try multiple methods for better compatibility
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast('Copied to clipboard!');
+        }).catch((err) => {
+          // Fallback method
+          fallbackCopy(text);
+        });
+      } else {
+        fallbackCopy(text);
+      }
+    }
+    
+    function fallbackCopy(text) {
+      // Create temporary textarea
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      
+      try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+          showToast('Copied to clipboard!');
+        } else {
+          showToast('Copy failed');
+        }
+      } catch (err) {
+        showToast('Copy failed');
+      }
+      
+      document.body.removeChild(textarea);
+    }
+
+    function exportText() {
+      const editor = document.getElementById('text-editor');
+      const text = editor.textContent;
+      
+      if (!text || text.trim() === '') {
+        showToast('No text to export');
+        return;
+      }
+      
+      // Add UTF-8 BOM to ensure proper encoding
+      const BOM = '\uFEFF';
+      const textWithBOM = BOM + text;
+      
+      // Create blob with explicit UTF-8 encoding
+      const blob = new Blob([textWithBOM], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Generate filename with date
+      const date = new Date();
+      const filename = `korean-text-${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}.txt`;
+      link.download = filename;
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      showToast('Text exported!');
+    }
+
+    function updateWordCount() {
+      const editor = document.getElementById('text-editor');
+      const text = editor.textContent;
+      const count = text.length;
+      document.getElementById('word-count').textContent = `${count} chars`;
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 2000);
+    }
+
+    // Element SDK Integration
+    async function onConfigChange(cfg) {
+      config = { ...defaultConfig, ...cfg };
+      
+      // Update title
+      const title = document.getElementById('editor-title');
+      title.textContent = config.editor_title || defaultConfig.editor_title;
+      title.style.fontFamily = `${config.font_family || defaultConfig.font_family}, serif`;
+      
+      // Update font size
+      const baseSize = config.font_size || defaultConfig.font_size;
+      title.style.fontSize = `${baseSize * 2}px`;
+      
+      // Update placeholder
+      const editor = document.getElementById('text-editor');
+      editor.setAttribute('data-placeholder', config.placeholder_text || defaultConfig.placeholder_text);
+    }
+
+    function mapToCapabilities(cfg) {
+      return {
+        recolorables: [
+          {
+            get: () => cfg.background_color || defaultConfig.background_color,
+            set: (value) => { cfg.background_color = value; window.elementSdk.setConfig({ background_color: value }); }
+          },
+          {
+            get: () => cfg.surface_color || defaultConfig.surface_color,
+            set: (value) => { cfg.surface_color = value; window.elementSdk.setConfig({ surface_color: value }); }
+          },
+          {
+            get: () => cfg.text_color || defaultConfig.text_color,
+            set: (value) => { cfg.text_color = value; window.elementSdk.setConfig({ text_color: value }); }
+          },
+          {
+            get: () => cfg.primary_action || defaultConfig.primary_action,
+            set: (value) => { cfg.primary_action = value; window.elementSdk.setConfig({ primary_action: value }); }
+          },
+          {
+            get: () => cfg.secondary_action || defaultConfig.secondary_action,
+            set: (value) => { cfg.secondary_action = value; window.elementSdk.setConfig({ secondary_action: value }); }
+          }
+        ],
+        borderables: [],
+        fontEditable: {
+          get: () => cfg.font_family || defaultConfig.font_family,
+          set: (value) => { cfg.font_family = value; window.elementSdk.setConfig({ font_family: value }); }
+        },
+        fontSizeable: {
+          get: () => cfg.font_size || defaultConfig.font_size,
+          set: (value) => { cfg.font_size = value; window.elementSdk.setConfig({ font_size: value }); }
+        }
+      };
+    }
+
+    function mapToEditPanelValues(cfg) {
+      return new Map([
+        ['editor_title', cfg.editor_title || defaultConfig.editor_title],
+        ['placeholder_text', cfg.placeholder_text || defaultConfig.placeholder_text]
+      ]);
+    }
+
+    // Initialize SDK
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities,
+        mapToEditPanelValues
+      });
+    }
+
+    // Start the app
+    init();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c7dbf83b5674c3e',t:'MTc3MDA3Nzg3Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
