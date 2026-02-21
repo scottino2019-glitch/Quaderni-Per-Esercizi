@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>โปรแกรมแก้ไขข้อความภาษาไทย</title>
+    <!-- Tailwind CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* Custom styles for scrollbar hiding (cross-browser) */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: none; /* Firefox */
+        }
+        /* Optional: If a specific Thai font is desired and installed on the user's system,
+           or loaded via @import/@font-face, you could apply it here.
+           For wider compatibility, relying on system fonts is often best.
+           Example: font-family: 'Sarabun', sans-serif;
+        */
+        body, textarea {
+            font-family: 'Tahoma', 'Thonburi', 'Sarabun', 'Kanit', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans text-gray-800">
+    <div id="app" class="min-h-screen flex flex-col items-center p-4 md:p-8">
+        <!-- Header -->
+        <header class="w-full max-w-5xl mb-6 text-center">
+            <h1 class="text-4xl font-extrabold text-blue-700 mb-2">โปรแกรมแก้ไขข้อความภาษาไทย</h1>
+            <p class="text-lg text-gray-600">คลิกที่ตัวอักษรด้านล่างเพื่อแทรกลงในกล่องข้อความ</p>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="w-full max-w-5xl bg-white shadow-xl rounded-lg p-6 flex flex-col lg:flex-row gap-6">
+            <!-- Text Editor Section -->
+            <section class="flex-1 lg:w-1/2">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-4">กล่องข้อความ</h2>
+                <textarea
+                    id="thaiEditor"
+                    class="w-full h-80 p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg resize-y"
+                    placeholder="เริ่มพิมพ์ที่นี่ หรือคลิกที่ตัวอักษรด้านล่างเพื่อแทรก..."
+                    aria-label="กล่องข้อความสำหรับแก้ไขภาษาไทย"
+                ></textarea>
+                <div class="mt-4 flex justify-end">
+                    <button id="clearButton" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50">
+                        ล้างข้อความ
+                    </button>
+                </div>
+            </section>
+
+            <!-- Thai Character Picker Section -->
+            <section class="flex-1 lg:w-1/2 lg:max-h-[calc(100vh-200px)] overflow-y-auto no-scrollbar pt-2 lg:pt-0">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-4">ตัวอักษรไทย</h2>
+
+                <!-- Character Categories -->
+                <div class="mb-6">
+                    <h3 class="text-xl font-medium text-blue-600 mb-3">พยัญชนะ (Consonants)</h3>
+                    <div id="consonantsGrid" class="grid grid-cols-7 sm:grid-cols-8 md:grid-cols-9 lg:grid-cols-10 xl:grid-cols-11 gap-2">
+                        <!-- Consonants will be dynamically inserted here -->
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="text-xl font-medium text-blue-600 mb-3">สระ (Vowels)</h3>
+                    <div id="vowelsGrid" class="grid grid-cols-7 sm:grid-cols-8 md:grid-cols-9 lg:grid-cols-10 xl:grid-cols-11 gap-2">
+                        <!-- Vowels will be dynamically inserted here -->
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="text-xl font-medium text-blue-600 mb-3">วรรณยุกต์ & ตัวพิเศษ (Tone Marks & Special)</h3>
+                    <div id="tonesSpecialGrid" class="grid grid-cols-7 sm:grid-cols-8 md:grid-cols-9 lg:grid-cols-10 xl:grid-cols-11 gap-2">
+                        <!-- Tone marks and special chars will be inserted here -->
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="text-xl font-medium text-blue-600 mb-3">ตัวเลขไทย (Thai Digits)</h3>
+                    <div id="digitsGrid" class="grid grid-cols-7 sm:grid-cols-8 md:grid-cols-9 lg:grid-cols-10 xl:grid-cols-11 gap-2">
+                        <!-- Digits will be inserted here -->
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="mt-8 text-gray-500 text-sm">
+            &copy; 2023 Thai Text Editor. สงวนลิขสิทธิ์.
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const thaiEditor = document.getElementById('thaiEditor');
+            const clearButton = document.getElementById('clearButton');
+
+            // Arrays of Thai characters, grouped by category
+            const consonants = [
+                'ก', 'ข', 'ฃ', 'ค', 'ฅ', 'ฆ', 'ง', 'จ', 'ฉ', 'ช', 'ซ', 'ฌ', 'ญ', 'ฎ', 'ฏ', 'ฐ',
+                'ฑ', 'ฒ', 'ณ', 'ด', 'ต', 'ถ', 'ท', 'ธ', 'น', 'บ', 'ป', 'ผ', 'ฝ', 'พ', 'ฟ', 'ภ',
+                'ม', 'ย', 'ร', 'ฤ', 'ล', 'ฦ', 'ว', 'ศ', 'ษ', 'ส', 'ห', 'ฬ', 'อ', 'ฮ'
+            ];
+
+            const vowels = [
+                'ะ', 'า', 'ำ', 'ิ', 'ี', 'ึ', 'ื', 'ุ', 'ู', 'เ', 'แ', 'โ', 'ใ', 'ไ'
+            ];
+
+            const tonesAndSpecial = [
+                '่', '้', '๊', '๋', '็', '์', 'ๆ', 'ฯ', '฿'
+            ];
+
+            const digits = [
+                '๐', '๑', '๒', '๓', '๔', '๕', '๖', '๗', '๘', '๙'
+            ];
+
+            /**
+             * Inserts a character into the textarea at the current cursor position.
+             * @param {string} char The character to insert.
+             */
+            function insertCharacter(char) {
+                const start = thaiEditor.selectionStart;
+                const end = thaiEditor.selectionEnd;
+                const value = thaiEditor.value;
+
+                thaiEditor.value = value.substring(0, start) + char + value.substring(end);
+                thaiEditor.selectionStart = thaiEditor.selectionEnd = start + char.length;
+                thaiEditor.focus(); // Keep focus on the editor after insertion
+            }
+
+            /**
+             * Renders an array of characters into a specified grid container.
+             * @param {string[]} characters An array of characters to render.
+             * @param {string} gridId The ID of the HTML element where buttons should be appended.
+             */
+            function renderCharacters(characters, gridId) {
+                const gridElement = document.getElementById(gridId);
+                characters.forEach(char => {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.textContent = char;
+                    button.classList.add(
+                        'char-button', // Custom class for event delegation
+                        'bg-blue-100', 'hover:bg-blue-200', 'active:bg-blue-300',
+                        'text-blue-800', 'font-bold', 'py-2', 'px-3', 'rounded',
+                        'transition-colors', 'duration-150', 'text-xl', 'text-center',
+                        'flex', 'items-center', 'justify-center', 'focus:outline-none',
+                        'focus:ring-2', 'focus:ring-blue-500', 'focus:ring-opacity-50'
+                    );
+                    button.setAttribute('aria-label', `Insert ${char}`); // For accessibility
+                    gridElement.appendChild(button);
+                });
+            }
+
+            // Render all character groups into their respective grids
+            renderCharacters(consonants, 'consonantsGrid');
+            renderCharacters(vowels, 'vowelsGrid');
+            renderCharacters(tonesAndSpecial, 'tonesSpecialGrid');
+            renderCharacters(digits, 'digitsGrid');
+
+            // Event delegation for character buttons:
+            // Attaching a single click listener to each grid container
+            // and checking if the clicked element is a character button.
+            document.querySelectorAll('[id$="Grid"]').forEach(grid => {
+                grid.addEventListener('click', (event) => {
+                    if (event.target.classList.contains('char-button')) {
+                        insertCharacter(event.target.textContent);
+                    }
+                });
+            });
+
+            // Clear button functionality
+            clearButton.addEventListener('click', () => {
+                thaiEditor.value = '';
+                thaiEditor.focus();
+            });
+
+            // Focus on the textarea when the page loads for immediate typing
+            thaiEditor.focus();
+        });
+    </script>
+</body>
+</html>

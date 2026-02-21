@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>हिन्दी पाठ संपादक (Hindi Text Editor)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Optional custom styles for better readability and visual appeal */
+        body {
+            font-family: 'Noto Sans Devanagari', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5; /* Light grey background */
+            color: #333;
+        }
+        /* Ensure the textarea uses a suitable font for Devanagari script */
+        #editor {
+            font-family: 'Noto Sans Devanagari', 'Arial Unicode MS', sans-serif;
+            font-size: 1.25rem; /* Large text for readability */
+            line-height: 1.75;
+            min-height: 250px; /* Increased min-height for a better editing experience */
+        }
+        .key-button {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0.5rem 0.75rem;
+            min-width: 40px; /* Minimum width for keys */
+            height: 50px; /* Fixed height for consistent keyboard layout */
+            font-size: 1.25rem;
+            font-weight: 500;
+            background-color: #ffffff;
+            border-radius: 0.375rem; /* rounded-md */
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            transition: all 0.15s ease-in-out;
+            cursor: pointer;
+            user-select: none; /* Prevent text selection on buttons */
+        }
+        .key-button:hover {
+            background-color: #f3f4f6;
+            box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.08);
+            transform: translateY(-1px);
+        }
+        .key-button:active {
+            background-color: #e5e7eb;
+            box-shadow: none;
+            transform: translateY(0);
+        }
+        .key-button.special {
+            background-color: #d1d5db; /* Lighter gray for special keys */
+        }
+        .key-button.special:hover {
+            background-color: #aebfd0;
+        }
+        .key-button.special:active {
+            background-color: #92a4b8;
+        }
+        .key-button.backspace {
+            background-color: #ef4444; /* Red for backspace */
+            color: white;
+            font-size: 1.1rem; /* Adjust font size for Backspace text */
+            gap: 0.5rem; /* Space between icon and text */
+        }
+        .key-button.backspace:hover {
+            background-color: #dc2626;
+        }
+        .key-button.backspace:active {
+            background-color: #b91c1c;
+        }
+        /* Custom grid for keyboard layout, ensuring more columns on larger screens */
+        #keyboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); /* Default 50px min width */
+            gap: 0.5rem;
+        }
+        @media (min-width: 640px) { /* sm */
+            #keyboard { grid-template-columns: repeat(8, 1fr); }
+        }
+        @media (min-width: 768px) { /* md */
+            #keyboard { grid-template-columns: repeat(10, 1fr); }
+        }
+        @media (min-width: 1024px) { /* lg */
+            #keyboard { grid-template-columns: repeat(12, 1fr); }
+        }
+        @media (min-width: 1280px) { /* xl */
+            #keyboard { grid-template-columns: repeat(14, 1fr); }
+        }
+        /* Ensure section titles span full width */
+        .keyboard-section-title {
+            grid-column: 1 / -1; /* Spans all columns */
+            text-align: left;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            padding-left: 0.5rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex flex-col items-center min-h-screen p-4">
+
+    <div class="max-w-4xl w-full bg-white shadow-xl rounded-lg p-6 space-y-6">
+        <h1 class="text-3xl font-extrabold text-center text-gray-800 mb-6">
+            <span class="text-indigo-600">हिन्दी</span> पाठ संपादक
+            <span class="block text-base font-normal text-gray-500 mt-1">
+                (Hindi Text Editor)
+            </span>
+        </h1>
+
+        <!-- Text Editor Area -->
+        <div class="relative">
+            <textarea
+                id="editor"
+                class="w-full p-4 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y shadow-sm"
+                placeholder="यहाँ हिन्दी में लिखें..."
+                aria-label="Hindi Text Editor"
+            ></textarea>
+            <div class="absolute bottom-2 right-2 text-sm text-gray-500 bg-white bg-opacity-75 px-2 py-1 rounded">
+                <span id="char-count">0</span> अक्षर | <span id="word-count">0</span> शब्द
+            </div>
+        </div>
+
+        <!-- Virtual Keyboard -->
+        <div id="keyboard" class="p-4 bg-gray-50 rounded-lg shadow-inner">
+            <!-- Vowels (स्वर) -->
+            <div class="keyboard-section-title text-lg font-semibold text-gray-700">स्वर (Vowels)</div>
+            <button class="key-button" data-char="अ">अ</button>
+            <button class="key-button" data-char="आ">आ</button>
+            <button class="key-button" data-char="इ">इ</button>
+            <button class="key-button" data-char="ई">ई</button>
+            <button class="key-button" data-char="उ">उ</button>
+            <button class="key-button" data-char="ऊ">ऊ</button>
+            <button class="key-button" data-char="ऋ">ऋ</button>
+            <button class="key-button" data-char="ए">ए</button>
+            <button class="key-button" data-char="ऐ">ऐ</button>
+            <button class="key-button" data-char="ओ">ओ</button>
+            <button class="key-button" data-char="औ">औ</button>
+            <button class="key-button" data-char="अं">अं</button>
+            <button class="key-button" data-char="अः">अः</button>
+            <button class="key-button" data-char="ऑ">ऑ</button>
+            <button class="key-button" data-char="ऍ">ऍ</button>
+
+            <!-- Consonants (व्यंजन) -->
+            <div class="keyboard-section-title text-lg font-semibold text-gray-700">व्यंजन (Consonants)</div>
+            <button class="key-button" data-char="क">क</button>
+            <button class="key-button" data-char="ख">ख</button>
+            <button class="key-button" data-char="ग">ग</button>
+            <button class="key-button" data-char="घ">घ</button>
+            <button class="key-button" data-char="ङ">ङ</button>
+            <button class="key-button" data-char="च">च</button>
+            <button class="key-button" data-char="छ">छ</button>
+            <button class="key-button" data-char="ज">ज</button>
+            <button class="key-button" data-char="झ">झ</button>
+            <button class="key-button" data-char="ञ">ञ</button>
+            <button class="key-button" data-char="ट">ट</button>
+            <button class="key-button" data-char="ठ">ठ</button>
+            <button class="key-button" data-char="ड">ड</button>
+            <button class="key-button" data-char="ढ">ढ</button>
+            <button class="key-button" data-char="ण">ण</button>
+            <button class="key-button" data-char="त">त</button>
+            <button class="key-button" data-char="थ">थ</button>
+            <button class="key-button" data-char="द">द</button>
+            <button class="key-button" data-char="ध">ध</button>
+            <button class="key-button" data-char="न">न</button>
+            <button class="key-button" data-char="प">प</button>
+            <button class="key-button" data-char="फ">फ</button>
+            <button class="key-button" data-char="ब">ब</button>
+            <button class="key-button" data-char="भ">भ</button>
+            <button class="key-button" data-char="म">म</button>
+            <button class="key-button" data-char="य">य</button>
+            <button class="key-button" data-char="र">र</button>
+            <button class="key-button" data-char="ल">ल</button>
+            <button class="key-button" data-char="व">व</button>
+            <button class="key-button" data-char="श">श</button>
+            <button class="key-button" data-char="ष">ष</button>
+            <button class="key-button" data-char="स">स</button>
+            <button class="key-button" data-char="ह">ह</button>
+            <button class="key-button" data-char="ळ">ळ</button>
+
+            <!-- Conjuncts (संयुक्त व्यंजन) & Nukta characters -->
+            <div class="keyboard-section-title text-lg font-semibold text-gray-700">संयुक्त/विशेष व्यंजन (Conjuncts/Special Consonants)</div>
+            <button class="key-button special" data-char="क्ष">क्ष</button>
+            <button class="key-button special" data-char="त्र">त्र</button>
+            <button class="key-button special" data-char="ज्ञ">ज्ञ</button>
+            <button class="key-button special" data-char="श्र">श्र</button>
+            <button class="key-button special" data-char="क़">क़</button>
+            <button class="key-button special" data-char="ख़">ख़</button>
+            <button class="key-button special" data-char="ग़">ग़</button>
+            <button class="key-button special" data-char="ज़">ज़</button>
+            <button class="key-button special" data-char="ड़">ड़</button>
+            <button class="key-button special" data-char="ढ़">ढ़</button>
+            <button class="key-button special" data-char="फ़">फ़</button>
+
+            <!-- Matras (मात्राएँ) & Other Symbols -->
+            <div class="keyboard-section-title text-lg font-semibold text-gray-700">मात्राएँ (Matras) & प्रतीक (Symbols)</div>
+            <button class="key-button special" data-char="ा">ा</button>
+            <button class="key-button special" data-char="ि">ि</button>
+            <button class="key-button special" data-char="ी">ी</button>
+            <button class="key-button special" data-char="ु">ु</button>
+            <button class="key-button special" data-char="ू">ू</button>
+            <button class="key-button special" data-char="ृ">ृ</button>
+            <button class="key-button special" data-char="े">े</button>
+            <button class="key-button special" data-char="ै">ै</button>
+            <button class="key-button special" data-char="ो">ो</button>
+            <button class="key-button special" data-char="ौ">ौ</button>
+            <button class="key-button special" data-char="ं">ं</button>
+            <button class="key-button special" data-char="ँ">ँ</button>
+            <button class="key-button special" data-char="ः">ः</button>
+            <button class="key-button special" data-char="्">्</button> <!-- Halant -->
+            <button class="key-button special" data-char="़">़</button> <!-- Nukta mark -->
+            <button class="key-button special" data-char="।">।</button> <!-- Danda (full stop) -->
+            <button class="key-button special" data-char="॥">॥</button> <!-- Double Danda -->
+            <button class="key-button special" data-char="ॐ">ॐ</button> <!-- Om Symbol -->
+            <button class="key-button special" data-char="₹">₹</button> <!-- Rupee Symbol -->
+            <button class="key-button special" data-char="ॅ">ॅ</button> <!-- Chandra (short 'a' like 'cat') -->
+            <button class="key-button special" data-char="ॉ">ॉ</button> <!-- Avagraha ('o' like 'cot') -->
+            <button class="key-button special" data-char=".">.</button>
+            <button class="key-button special" data-char=",">,</button>
+            <button class="key-button special" data-char="?">?</button>
+            <button class="key-button special" data-char="!">!</button>
+
+            <!-- Digits (अंक) -->
+            <div class="keyboard-section-title text-lg font-semibold text-gray-700">अंक (Digits)</div>
+            <button class="key-button" data-char="०">०</button>
+            <button class="key-button" data-char="१">१</button>
+            <button class="key-button" data-char="२">२</button>
+            <button class="key-button" data-char="३">३</button>
+            <button class="key-button" data-char="४">४</button>
+            <button class="key-button" data-char="५">५</button>
+            <button class="key-button" data-char="६">६</button>
+            <button class="key-button" data-char="७">७</button>
+            <button class="key-button" data-char="८">८</button>
+            <button class="key-button" data-char="९">९</button>
+
+            <!-- Control Keys -->
+            <div class="keyboard-section-title text-lg font-semibold text-gray-700">नियंत्रण (Control)</div>
+            <button class="key-button special col-span-2 sm:col-span-3 md:col-span-4" data-char=" " aria-label="Spacebar">स्पेस (Space)</button>
+            <button class="key-button backspace col-span-2 sm:col-span-3 md:col-span-4" data-action="backspace" aria-label="Backspace">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12.062 12.062a1 1 0 010 1.416l-4.524 4.525a1 1 0 01-1.416 0L2.938 12.062a1 1 0 010-1.416l4.524-4.525a1 1 0 011.416 0l4.524 4.525z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 12H7"/>
+                </svg>
+                बैकस्पेस (Backspace)
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const editor = document.getElementById('editor');
+        const keyboard = document.getElementById('keyboard');
+        const charCountSpan = document.getElementById('char-count');
+        const wordCountSpan = document.getElementById('word-count');
+
+        // Function to update character and word counts
+        function updateCounts() {
+            const text = editor.value;
+            charCountSpan.textContent = text.length;
+            // Trim whitespace, then split by one or more whitespace characters
+            // Filter out empty strings in case of multiple spaces
+            const words = text.trim().split(/\s+/).filter(word => word.length > 0);
+            wordCountSpan.textContent = words.length;
+        }
+
+        // Event listener for textarea input to update counts
+        editor.addEventListener('input', updateCounts);
+
+        // Event listener for virtual keyboard clicks
+        keyboard.addEventListener('click', (event) => {
+            // Find the closest parent with 'key-button' class
+            const target = event.target.closest('.key-button');
+            if (!target) return; // Not a key button
+
+            // Ensure editor has focus before inserting/deleting
+            editor.focus();
+
+            const charToInsert = target.dataset.char;
+            const action = target.dataset.action;
+
+            let currentValue = editor.value;
+            let selectionStart = editor.selectionStart;
+            let selectionEnd = editor.selectionEnd;
+
+            if (action === 'backspace') {
+                if (selectionStart > 0 && selectionStart === selectionEnd) {
+                    // No selection, delete character before cursor
+                    currentValue = currentValue.substring(0, selectionStart - 1) + currentValue.substring(selectionEnd);
+                    selectionStart--; // Move cursor back by one
+                } else if (selectionStart !== selectionEnd) {
+                    // There is a selection, delete the selected text
+                    currentValue = currentValue.substring(0, selectionStart) + currentValue.substring(selectionEnd);
+                    // Cursor remains at selectionStart
+                }
+            } else if (charToInsert) {
+                // Insert character at the cursor/selection
+                currentValue = currentValue.substring(0, selectionStart) + charToInsert + currentValue.substring(selectionEnd);
+                selectionStart += charToInsert.length; // Move cursor after inserted char(s)
+            }
+
+            // Update the textarea value and cursor position
+            editor.value = currentValue;
+            editor.setSelectionRange(selectionStart, selectionStart);
+
+            // After any modification, update counts
+            updateCounts();
+        });
+
+        // Initialize counts on load
+        updateCounts();
+    </script>
+</body>
+</html>

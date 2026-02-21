@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Türkçe Metin Düzenleyici</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Modern scrollbar styling for the textarea */
+        textarea::-webkit-scrollbar {
+            width: 8px;
+        }
+        textarea::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        textarea::-webkit-scrollbar-thumb {
+            background: #cbd5e0; /* gray-300 */
+            border-radius: 10px;
+        }
+        textarea::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0; /* gray-400 */
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-100 to-indigo-200 flex items-center justify-center min-h-screen p-4 font-sans text-gray-800">
+    <div class="bg-white p-6 md:p-8 lg:p-10 rounded-xl shadow-2xl w-full max-w-4xl border border-gray-200 transform hover:scale-[1.005] transition-transform duration-300 ease-in-out">
+        <h1 class="text-4xl sm:text-5xl font-extrabold mb-6 text-center text-blue-700 leading-tight tracking-tight">
+            Türkçe Metin Düzenleyici
+        </h1>
+        
+        <textarea
+            id="editor"
+            class="w-full h-64 sm:h-72 p-4 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-300 resize-y text-lg sm:text-xl font-sans leading-relaxed transition-all duration-200 ease-in-out shadow-inner placeholder-gray-400"
+            placeholder="Metninizi buraya yazın veya aşağıdaki harfleri kullanarak ekleyin..."
+            aria-label="Türkçe metin düzenleyici alanı"
+        ></textarea>
+        
+        <div id="alphabet-buttons" class="grid grid-cols-6 sm:grid-cols-7 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12 gap-2 mb-6">
+            <!-- Turkish alphabet buttons will be inserted here by JavaScript -->
+        </div>
+
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+            <button
+                id="clear-button"
+                class="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-lg transition duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-red-200 shadow-md flex-grow sm:flex-grow-0"
+                aria-label="Metni temizle"
+            >
+                Temizle
+            </button>
+            <button
+                id="copy-button"
+                class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-200 shadow-md flex-grow sm:flex-grow-0"
+                aria-label="Metni panoya kopyala"
+            >
+                Kopyala
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const editor = document.getElementById('editor');
+            const alphabetButtonsContainer = document.getElementById('alphabet-buttons');
+            const clearButton = document.getElementById('clear-button');
+            const copyButton = document.getElementById('copy-button');
+
+            const turkishAlphabet = [
+                'A', 'B', 'C', 'Ç', 'D', 'E', 'F', 'G', 'Ğ', 'H', 'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P', 'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'Y', 'Z'
+            ];
+
+            // Generate alphabet buttons dynamically
+            turkishAlphabet.forEach(char => {
+                const button = document.createElement('button');
+                button.textContent = char;
+                button.setAttribute('data-char', char);
+                button.className = 'bg-blue-100 hover:bg-blue-200 text-blue-800 font-semibold py-2 px-3 rounded-md transition duration-150 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-300 text-lg shadow-sm';
+                button.setAttribute('aria-label', `Harf ekle: ${char}`);
+                alphabetButtonsContainer.appendChild(button);
+            });
+
+            // Function to insert text at the current cursor position in the textarea
+            const insertChar = (char) => {
+                const start = editor.selectionStart;
+                const end = editor.selectionEnd;
+                const currentValue = editor.value;
+
+                editor.value = currentValue.substring(0, start) + char + currentValue.substring(end);
+                
+                // Move cursor after the inserted character
+                editor.setSelectionRange(start + char.length, start + char.length);
+                editor.focus(); // Keep the textarea focused
+            };
+
+            // Event listener for alphabet buttons container (using event delegation)
+            alphabetButtonsContainer.addEventListener('click', (event) => {
+                const target = event.target;
+                if (target.tagName === 'BUTTON' && target.hasAttribute('data-char')) {
+                    insertChar(target.dataset.char);
+                }
+            });
+
+            // Event listener for the "Temizle" (Clear) button
+            clearButton.addEventListener('click', () => {
+                if (editor.value.length > 0 && confirm('Metni temizlemek istediğinizden emin misiniz?')) {
+                    editor.value = '';
+                    editor.focus();
+                    alert('Metin başarıyla temizlendi!');
+                } else if (editor.value.length === 0) {
+                    alert('Metin kutusu zaten boş.');
+                }
+            });
+
+            // Event listener for the "Kopyala" (Copy) button
+            copyButton.addEventListener('click', async () => {
+                if (editor.value.length === 0) {
+                    alert('Kopyalanacak metin bulunmuyor.');
+                    editor.focus();
+                    return;
+                }
+                try {
+                    await navigator.clipboard.writeText(editor.value);
+                    alert('Metin panoya kopyalandı!');
+                } catch (err) {
+                    console.error('Kopyalama başarısız oldu:', err);
+                    alert('Metni kopyalarken bir hata oluştu. Lütfen manuel olarak kopyalayın (Ctrl+C / Cmd+C).');
+                }
+                editor.focus(); // Keep the textarea focused
+            });
+        });
+    </script>
+</body>
+</html>
