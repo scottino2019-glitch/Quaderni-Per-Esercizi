@@ -82,6 +82,7 @@
       font-weight: bold;
       color: #fff;
       text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+      text-decoration: none;
     }
 
     .logo-icon {
@@ -111,6 +112,7 @@
       backdrop-filter: blur(10px);
       transition: all 0.3s;
       font-weight: 600;
+      text-decoration: none;
     }
 
     nav a:hover {
@@ -177,31 +179,27 @@
       border: 3px dashed var(--accent2);
     }
 
-    .hero-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
+    /* Box dei saluti dinamico */
+    .greeting-box {
+      background: #fff;
+      padding: 1.5rem;
+      border-radius: 20px;
+      box-shadow: var(--shadow-soft);
+      text-align: center;
+      max-width: 400px;
     }
 
-    .btn-primary {
-      background: linear-gradient(135deg, var(--accent4), #ff9800);
-      color: #fff;
-      border: none;
-      border-radius: 50px;
-      padding: 1rem 2rem;
-      font-size: 1.1rem;
+    .greeting-title {
+      font-size: 1.8rem;
       font-weight: bold;
-      cursor: pointer;
-      box-shadow: var(--shadow-glow);
-      transition: all 0.3s;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+      color: var(--accent3);
+      margin-bottom: 0.5rem;
     }
 
-    .btn-primary:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 25px rgba(255,183,77,0.5);
+    .greeting-content {
+      font-size: 1.6rem;
+      line-height: 1.4;
+      word-break: keep-all;
     }
 
     /* Cards editor colorate */
@@ -238,6 +236,8 @@
       position: relative;
       transition: all 0.3s;
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
     .editor-card::before {
@@ -265,12 +265,13 @@
     }
 
     .editor-title {
-      font-size: 1.4rem;
+      font-size: 1.3rem;
       font-weight: bold;
       margin-bottom: 0.75rem;
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      min-height: 3rem;
     }
 
     .editor-script {
@@ -280,12 +281,14 @@
       -webkit-text-fill-color: transparent;
       margin-bottom: 0.75rem;
       font-weight: bold;
+      text-align: center;
     }
 
     .editor-desc {
       color: var(--text-light);
-      margin-bottom: 1rem;
+      margin-bottom: 1.5rem;
       font-size: 0.95rem;
+      flex-grow: 1;
     }
 
     .btn-small {
@@ -298,10 +301,15 @@
       cursor: pointer;
       transition: all 0.3s;
       box-shadow: 0 4px 12px rgba(129,199,132,0.4);
+      width: 100%;
+      text-align: center;
+      display: inline-block;
+      text-decoration: none;
     }
 
     .btn-small:hover {
       transform: scale(1.05);
+      filter: brightness(1.1);
     }
 
     /* Band vivace */
@@ -352,7 +360,6 @@
         <ul>
           <li><a href="https://quaderni-per-esercizi.vercel.app/">🏠 Home</a></li>
           <li><a href="#editors">✏️ Editor</a></li>
-          
         </ul>
       </nav>
     </div>
@@ -366,18 +373,18 @@
         </div>
         <h1>Impara scrivendo con i nostri editor colorati!</h1>
         <p>
-          Russo, Coreano, Arabo e Giapponese: scegli il tuo quaderno digitale, 
+          Russo, Coreano, Arabo, Giapponese, Hindi, Thai e Turco: scegli il tuo quaderno digitale, 
           esercitati con alfabeti divertenti e salva i tuoi progressi scolastici!
         </p>
-        <div class="hero-actions">
-          
-        </div>
       </div>
       <div style="display: flex; flex-direction: column; gap: 1rem; align-items: center;">
         <div style="font-size: 4rem; animation: float 2s infinite;">✏️📚</div>
-        <div style="background: #fff; padding: 1.5rem; border-radius: 20px; box-shadow: var(--shadow-soft); text-align: center;">
-          <div style="font-size: 1.8rem; font-weight: bold; color: var(--accent3);">Pronto per scrivere?</div>
-          <div style="font-size: 3rem; line-height: 1;">Привет 안녕 مرحبا こんにちは</div>
+        <div class="greeting-box">
+          <div class="greeting-title">Pronto per scrivere?</div>
+          <div class="greeting-content">
+            Привет 안녕 مرحبا こんにちは<br>
+            नमस्ते สวัสดี Merhaba
+          </div>
         </div>
       </div>
     </section>
@@ -392,36 +399,67 @@
         <h2>Scegli il tuo editor lingua! 🌟</h2>
       </div>
       <div class="cards-grid">
+        <!-- Card Russo -->
         <article class="editor-card">
           <div class="editor-tag">🇷🇺 Russo</div>
           <div class="editor-title">Editor Cirillico Divertente</div>
           <div class="editor-script">Привет, друзья!</div>
           <p class="editor-desc">Alfabeto cirillico con griglia quaderno, frasi da ripetere e note colorate.</p>
-    <a href="tastiere/russo.html">      <button class="btn-small">Apri Quaderno</button></a>
+          <a href="tastiere/russo.html" class="btn-small">Apri Quaderno</a>
         </article>
 
+        <!-- Card Coreano -->
         <article class="editor-card">
           <div class="editor-tag">🇰🇷 Coreano</div>
           <div class="editor-title">Hangul Playground</div>
           <div class="editor-script">안녕하세요 친구들!</div>
           <p class="editor-desc">Sillabe Hangul su quadretti, dialoghi scolastici e giochi di scrittura.</p>
-    <a href="tastiere/coreano.html">   <button class="btn-small">Apri Quaderno</button>
+          <a href="tastiere/coreano.html" class="btn-small">Apri Quaderno</a>
         </article>
 
+        <!-- Card Arabo -->
         <article class="editor-card">
           <div class="editor-tag">🇸🇦 Arabo</div>
           <div class="editor-title">Calligrafia Araba Magica</div>
           <div class="editor-script">مرحبا أصدقاء!</div>
           <p class="editor-desc">Scrittura RTL con righe guida, esercizi base e modalità pennino.</p>
-  <a href="tastiere/arabo.html">     <button class="btn-small">Apri Quaderno</button></a>
+          <a href="tastiere/arabo.html" class="btn-small">Apri Quaderno</a>
         </article>
 
+        <!-- Card Giapponese -->
         <article class="editor-card">
           <div class="editor-tag">🇯🇵 Giapponese</div>
           <div class="editor-title">Kana & Kanji Studio</div>
           <div class="editor-script">こんにちは友達！</div>
           <p class="editor-desc">Hiragana/Katakana su genkō yōshi, frasi scuola e contatore colpi.</p>
-    <a href="tastiere/giapponese.html">    <button class="btn-small" >Apri Quaderno</button></a>
+          <a href="tastiere/giapponese.html" class="btn-small">Apri Quaderno</a>
+        </article>
+
+        <!-- Card Hindi -->
+        <article class="editor-card">
+          <div class="editor-tag">🇮🇳 Hindi</div>
+          <div class="editor-title">Devanagari Master</div>
+          <div class="editor-script">नमस्ते दोस्तों!</div>
+          <p class="editor-desc">Impara a collegare le lettere Devanagari con la linea superiore e i caratteri speciali.</p>
+          <a href="tastiere/hindi.html" class="btn-small">Apri Quaderno</a>
+        </article>
+
+        <!-- Card Thai -->
+        <article class="editor-card">
+          <div class="editor-tag">🇹🇭 Thai</div>
+          <div class="editor-title">Siam Alphabet Lab</div>
+          <div class="editor-script">สวัสดีครับ!</div>
+          <p class="editor-desc">Esercitati con l'alfabeto thailandese, i segni dei toni e le linee sinuose della scrittura Thai.</p>
+          <a href="tastiere/thai.html" class="btn-small">Apri Quaderno</a>
+        </article>
+
+        <!-- Card Turco -->
+        <article class="editor-card">
+          <div class="editor-tag">🇹🇷 Turco</div>
+          <div class="editor-title">Türkçe Klavye Studio</div>
+          <div class="editor-script">Merhaba nasılsın?</div>
+          <p class="editor-desc">Focus sulle lettere speciali turche (ğ, ş, ı, İ) con correttore grammaticale integrato.</p>
+          <a href="tastiere/turco.html" class="btn-small">Apri Quaderno</a>
         </article>
       </div>
     </section>
@@ -432,3 +470,4 @@
   </footer>
 </body>
 </html>
+
