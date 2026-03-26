@@ -3,129 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Homepage Scuola Creativa</title>
-    <!-- Tailwind CSS CDN -->
+    <title>La Mia Scrivania Creativa</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts - Per un'atmosfera scolastica informale e accattivante -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Kalam:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
-        /* Stili personalizzati per l'effetto quaderno */
+        /* SFONDO SCRIVANIA */
+        body {
+            background-color: #e5e5f7;
+            background-image:  repeating-radial-gradient( circle at 0 0, transparent 0, #e5e5f7 10px ), repeating-linear-gradient( #d2b48c55, #d2b48c );
+            background-blend-mode: multiply;
+            background-size: 100% 100%;
+            background-attachment: fixed;
+        }
+
+        /* Stili fogli */
         .notebook-lined {
-            background-color: #fcfcfc; /* Colore carta leggermente sporco */
-            background-image: linear-gradient(to bottom, #d3d3d3 1px, transparent 1px);
-            background-size: 100% 28px; /* Altezza della riga */
-            background-position-y: 12px; /* Inizia le righe leggermente più in basso */
-            padding-left: 30px; /* Spazio per la riga rossa di margine */
+            background: #fff;
+            background-image: linear-gradient(#e5e5e5 1.1rem, transparent 0);
+            background-size: 100% 1.6rem;
             position: relative;
+            padding-left: 50px;
         }
         .notebook-lined::before {
             content: '';
             position: absolute;
-            left: 15px; /* Posizione del margine rosso */
-            top: 0;
-            bottom: 0;
-            width: 1px; /* Spessore della riga di margine */
-            background-color: #ff6b6b; /* Colore rosso del margine */
+            left: 35px; top: 0; bottom: 0; width: 2px;
+            background-color: #ffadad;
         }
 
         .notebook-checkered {
-            background-color: #fcfcfc; /* Colore carta leggermente sporco */
-            background-image: linear-gradient(to right, #d3d3d3 1px, transparent 1px),
-                              linear-gradient(to bottom, #d3d3d3 1px, transparent 1px);
-            background-size: 24px 24px; /* Dimensione della cella della griglia */
-            background-position: 12px 12px; /* Offset della griglia */
-            padding-left: 30px; /* Spazio per la riga rossa di margine */
+            background: #fff;
+            background-image: 
+                linear-gradient(#e5e5e5 1px, transparent 1px),
+                linear-gradient(90deg, #e5e5e5 1px, transparent 1px);
+            background-size: 25px 25px;
             position: relative;
+            padding-left: 50px;
         }
         .notebook-checkered::before {
             content: '';
             position: absolute;
-            left: 15px; /* Posizione del margine rosso */
-            top: 0;
-            bottom: 0;
-            width: 1px; /* Spessore della riga di margine */
-            background-color: #ff6b6b; /* Colore rosso del margine */
+            left: 35px; top: 0; bottom: 0; width: 2px;
+            background-color: #ffadad;
         }
-        
-        /* Applica i font personalizzati */
-        .font-school-header {
-            font-family: 'Permanent Marker', cursive;
+
+        .font-school-header { font-family: 'Permanent Marker', cursive; }
+        .font-school-text { font-family: 'Kalam', cursive; }
+
+        .real-shadow {
+            box-shadow: 10px 10px 20px rgba(0,0,0,0.15);
         }
-        .font-school-text {
-            font-family: 'Kalam', cursive;
+        .real-shadow:hover {
+            box-shadow: 15px 15px 30px rgba(0,0,0,0.25);
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-yellow-100 via-green-100 to-blue-100 min-h-screen p-6 sm:p-8 flex items-center justify-center">
+<body class="min-h-screen p-6 sm:p-12">
 
-    <div class="max-w-6xl w-full bg-white bg-opacity-95 rounded-2xl shadow-2xl p-6 sm:p-10 lg:p-12 border-4 border-dashed border-gray-300">
-        <header class="text-center mb-10 sm:mb-14">
-            <h1 class="font-school-header text-5xl sm:text-6xl md:text-7xl font-bold text-gray-800 leading-tight">
-                <span role="img" aria-label="matita">✏️</span> Quaderni per gli esercizi <span role="img" aria-label="libro">📚</span>
-            </h1>
-            <p class="font-school-text text-xl sm:text-2xl mt-4 text-gray-600">
-                Cinese, Coreano, Giapponese, Arabo, Russo, Turco, Hindi
-            </p>
-        </header>
+    <header class="text-center mb-16">
+        <h1 class="font-school-header text-5xl sm:text-7xl text-white drop-shadow-[0_5px_5px_rgba(0,0,0,0.5)] rotate-[-1deg]">
+            Il Mio Laboratorio Linguistico
+        </h1>
+        <p class="font-school-text text-2xl mt-4 text-amber-900 font-bold bg-yellow-200 inline-block px-4 py-1 rounded-full shadow-sm">
+            Tutti i tuoi quaderni in un unico posto ✏️
+        </p>
+    </header>
 
-        <main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <!-- Card 1: Italiano (quaderno a righe) -->
-            <div class="card notebook-lined border-l-8 border-blue-500 rounded-lg shadow-md p-6 relative overflow-hidden transform hover:scale-105 transition-transform duration-300 ease-in-out cursor-pointer group">
-                <h2 class="font-school-header text-3xl font-bold text-blue-800 mb-2 group-hover:text-blue-600">Quaderni a Righe e Quadretti</h2>
-                <p class="font-school-text text-lg text-gray-700 leading-relaxed">
-                    Cinese-Giapponese-Arabo-Russo-Turco-Hindi
-                </p>
-          <a href="righe-quadretti.html">       <button class="absolute bottom-4 right-4 text-5xl opacity-20 group-hover:opacity-40 transition-opacity">✍️</button></a>
+    <main class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        
+        <a href="righe-quadretti.html" class="group block transform hover:-rotate-2 hover:-translate-y-2 transition-all duration-300">
+            <div class="notebook-lined border-t-8 border-blue-600 rounded-b-xl p-8 real-shadow min-h-[250px]">
+                <h2 class="font-school-header text-2xl text-blue-900 mb-4">Righe & Quadretti</h2>
+                <p class="font-school-text text-lg text-gray-700">Mix per Cinese e Arabo</p>
+                <span class="absolute bottom-4 right-6 text-5xl group-hover:scale-125 transition-transform">📘</span>
             </div>
+        </a>
 
-            <!-- Card 2: Matematica (quaderno a quadretti) -->
-            <div class="card notebook-checkered border-l-8 border-red-500 rounded-lg shadow-md p-6 relative overflow-hidden transform hover:scale-105 transition-transform duration-300 ease-in-out cursor-pointer group">
-                <h2 class="font-school-header text-3xl font-bold text-red-800 mb-2 group-hover:text-red-600">Quadretti Piccoli</h2>
-                <p class="font-school-text text-lg text-gray-700 leading-relaxed">
-                    Coreano
-                </p>
-                <a href="quadretti-piccoli.html">    <button class="absolute bottom-4 right-4 text-5xl opacity-20 group-hover:opacity-40 transition-opacity">🏯</button></a>
+        <a href="quadretti-piccoli.html" class="group block transform hover:rotate-2 hover:-translate-y-2 transition-all duration-300">
+            <div class="notebook-checkered border-t-8 border-red-600 rounded-b-xl p-8 real-shadow min-h-[250px]">
+                <h2 class="font-school-header text-2xl text-red-900 mb-4">Coreano</h2>
+                <p class="font-school-text text-lg text-gray-700">Quadretti piccoli precisi</p>
+                <span class="absolute bottom-4 right-6 text-5xl group-hover:scale-125 transition-transform">🧧</span>
             </div>
+        </a>
 
-            <!-- Card 3: Storia (quaderno a righe) -->
-            <div class="card notebook-lined border-l-8 border-green-500 rounded-lg shadow-md p-6 relative overflow-hidden transform hover:scale-105 transition-transform duration-300 ease-in-out cursor-pointer group">
-                <h2 class="font-school-header text-3xl font-bold text-green-800 mb-2 group-hover:text-green-600">Solo a righe</h2>
-                <p class="font-school-text text-lg text-gray-700 leading-relaxed">
-                    Russo-Turco-Arabo-Hindi
-                </p>
-          <a href="righe.html">      <button class="absolute bottom-4 right-4 text-5xl opacity-20 group-hover:opacity-40 transition-opacity">🖍️</button></a>
+        <a href="righe.html" class="group block transform hover:-rotate-1 hover:-translate-y-2 transition-all duration-300">
+            <div class="notebook-lined border-t-8 border-green-600 rounded-b-xl p-8 real-shadow min-h-[250px]">
+                <h2 class="font-school-header text-2xl text-green-900 mb-4">Solo Righe</h2>
+                <p class="font-school-text text-lg text-gray-700">Russo, Turco e Hindi</p>
+                <span class="absolute bottom-4 right-6 text-5xl group-hover:scale-125 transition-transform">🌿</span>
             </div>
+        </a>
 
-            <!-- Card 4: Scienze (quaderno a quadretti) -->
-            <div class="card notebook-checkered border-l-8 border-purple-500 rounded-lg shadow-md p-6 relative overflow-hidden transform hover:scale-105 transition-transform duration-300 ease-in-out cursor-pointer group">
-                <h2 class="font-school-header text-3xl font-bold text-purple-800 mb-2 group-hover:text-purple-600">Quadretti grandi</h2>
-                <p class="font-school-text text-lg text-gray-700 leading-relaxed">
-                    Cinese-Giapponese
-                </p>
-         <a href="quadretti-grandi.html">       <button class="absolute bottom-4 right-4 text-5xl opacity-20 group-hover:opacity-40 transition-opacity">📉</button></a>
+        <a href="quadretti-grandi.html" class="group block transform hover:rotate-3 hover:-translate-y-2 transition-all duration-300">
+            <div class="notebook-checkered border-t-8 border-purple-600 rounded-b-xl p-8 real-shadow min-h-[250px]">
+                <h2 class="font-school-header text-2xl text-purple-900 mb-4">Grandi Quadretti</h2>
+                <p class="font-school-text text-lg text-gray-700">Ideale per principianti</p>
+                <span class="absolute bottom-4 right-6 text-5xl group-hover:scale-125 transition-transform">🔮</span>
             </div>
+        </a>
 
-            <!-- Card 5: Arte (quaderno a righe, colore vivace) -->
-            <div class="card notebook-lined border-l-8 border-yellow-500 rounded-lg shadow-md p-6 relative overflow-hidden transform hover:scale-105 transition-transform duration-300 ease-in-out cursor-pointer group">
-                <h2 class="font-school-header text-3xl font-bold text-yellow-800 mb-2 group-hover:text-yellow-600">Righe Grandi</h2>
-                <p class="font-school-text text-lg text-gray-700 leading-relaxed">
-                    Russo-Arabo-Turco-Hindi
-                </p>
-         <a href="righe-grandi.html">        <button class="absolute bottom-4 right-4 text-5xl opacity-20 group-hover:opacity-40 transition-opacity">📑</button> </a>
+        <a href="righe-grandi.html" class="group block transform hover:-rotate-3 hover:-translate-y-2 transition-all duration-300">
+            <div class="notebook-lined border-t-8 border-yellow-500 rounded-b-xl p-8 real-shadow min-h-[250px]">
+                <h2 class="font-school-header text-2xl text-yellow-900 mb-4">Righe Larghe</h2>
+                <p class="font-school-text text-lg text-gray-700">Spazio per ogni segno</p>
+                <span class="absolute bottom-4 right-6 text-5xl group-hover:scale-125 transition-transform">📒</span>
             </div>
+        </a>
 
-            <!-- Card 6: Musica (quaderno a quadretti, colore vivace) -->
-            <div class="card notebook-checkered border-l-8 border-orange-500 rounded-lg shadow-md p-6 relative overflow-hidden transform hover:scale-105 transition-transform duration-300 ease-in-out cursor-pointer group">
-                <h2 class="font-school-header text-3xl font-bold text-orange-800 mb-2 group-hover:text-orange-600">Editor </h2>
-                <p class="font-school-text text-lg text-gray-700 leading-relaxed">
-                    Editor per varie lingue
-                </p>
-       <a href="editors.html">          <button class="absolute bottom-4 right-4 text-5xl opacity-20 group-hover:opacity-40 transition-opacity">✍️</button></a>
+        <a href="editors.html" class="group block transform hover:rotate-1 hover:-translate-y-2 transition-all duration-300">
+            <div class="notebook-checkered border-t-8 border-orange-600 rounded-b-xl p-8 real-shadow min-h-[250px]">
+                <h2 class="font-school-header text-2xl text-orange-900 mb-4">Editor</h2>
+                <p class="font-school-text text-lg text-gray-700">Scrivi online</p>
+                <span class="absolute bottom-4 right-6 text-5xl group-hover:scale-125 transition-transform">💻</span>
             </div>
-        </main>
-    </div>
+        </a>
+
+        <a href=" https://eserciziario.vercel.app/" class="group block transform hover:-rotate-2 hover:-translate-y-2 transition-all duration-300">
+            <div class="notebook-lined border-t-8 border-indigo-800 rounded-b-xl p-8 real-shadow min-h-[250px] bg-slate-50">
+                <h2 class="font-school-header text-2xl text-indigo-900 mb-4">Eserciziario</h2>
+                <p class="font-school-text text-lg text-gray-700">Pdf Annotator</p>
+                <span class="absolute bottom-4 right-6 text-5xl group-hover:scale-125 transition-transform">📖</span>
+            </div>
+        </a>
+
+        <a href="https://quaderno-digitale.vercel.app/" class="group block transform hover:rotate-2 hover:-translate-y-2 transition-all duration-300">
+            <div class="notebook-checkered border-t-8 border-cyan-500 rounded-b-xl p-8 real-shadow min-h-[250px] bg-cyan-50/30">
+                <h2 class="font-school-header text-2xl text-cyan-900 mb-4">Quaderno Digitale</h2>
+                <p class="font-school-text text-lg text-gray-700">I tuoi appunti nel cloud</p>
+                <span class="absolute bottom-4 right-6 text-5xl group-hover:scale-125 transition-transform">☁️</span>
+            </div>
+        </a>
+
+    </main>
+
+    <footer class="text-center mt-20 font-school-text text-amber-900 font-bold">
+        Buon divertimento con le lingue! 🌍
+    </footer>
 
 </body>
 </html>
