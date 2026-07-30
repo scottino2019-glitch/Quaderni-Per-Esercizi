@@ -11,7 +11,7 @@ export default defineConfig({
       manifest: {
         name: 'Il Mio Laboratorio Linguistico',
         short_name: 'Lab Linguistico',
-        description: 'Quaderni per esercizi e tastiere multilingue per l'apprendimento delle lingue',
+        description: "Quaderni per esercizi e tastiere multilingue per l'apprendimento delle lingue",
         theme_color: '#ffffff',
         background_color: '#ffffff',
         display: 'standalone',
