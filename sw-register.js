@@ -3,7 +3,7 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
       .then((reg) => {
-        console.log('[PWA] ServiceWorker registered successfully with scope:', reg.scope);
+        console.log('[PWA] ServiceWorker registered with scope:', reg.scope);
       })
       .catch((err) => {
         console.warn('[PWA] ServiceWorker registration failed:', err);
@@ -14,67 +14,66 @@ if ('serviceWorker' in navigator) {
 let deferredPrompt = null;
 const isInIframe = window.self !== window.top;
 
+// Capture beforeinstallprompt event (Chrome, Edge, Android)
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  console.log('[PWA] Captured beforeinstallprompt event');
+  console.log('[PWA] beforeinstallprompt event captured');
 
+  // Highlight install button if available
   const installBtn = document.getElementById('pwa-direct-install-btn');
   if (installBtn) {
-    installBtn.classList.remove('hidden');
+    installBtn.classList.remove('bg-gray-200', 'text-gray-700');
+    installBtn.classList.add('bg-emerald-400', 'text-blue-950', 'animate-pulse');
   }
 });
 
-// Update UI on load
+// Setup page state on load
 window.addEventListener('DOMContentLoaded', () => {
-  const currentUrl = window.location.href;
-
-  // Set links to current URL for target="_blank"
-  const tabLinks = document.querySelectorAll('.pwa-tab-link');
-  tabLinks.forEach(link => {
-    link.href = currentUrl;
-  });
-
-  const urlInput = document.getElementById('pwa-url-input');
-  if (urlInput) {
-    urlInput.value = currentUrl;
-  }
-
+  const pwaBanner = document.getElementById('pwa-install-banner');
   const iframeNotice = document.getElementById('pwa-iframe-notice');
-  const standaloneNotice = document.getElementById('pwa-standalone-notice');
-  const openTabContainer = document.getElementById('pwa-open-tab-container');
-  const installBtnContainer = document.getElementById('pwa-install-btn-container');
+  const topNotice = document.getElementById('pwa-top-notice');
+  const openTabBtn = document.getElementById('pwa-open-tab-btn');
+  const installBtn = document.getElementById('pwa-install-btn');
+
+  // Check if already running in standalone PWA mode
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  if (isStandalone && pwaBanner) {
+    pwaBanner.style.display = 'none';
+    return;
+  }
 
   if (isInIframe) {
     if (iframeNotice) iframeNotice.classList.remove('hidden');
-    if (standaloneNotice) standaloneNotice.classList.add('hidden');
-    if (openTabContainer) openTabContainer.classList.remove('hidden');
-    if (installBtnContainer) installBtnContainer.classList.add('hidden');
+    if (topNotice) topNotice.classList.add('hidden');
+    if (openTabBtn) openTabBtn.classList.remove('hidden');
+    if (installBtn) installBtn.classList.add('hidden');
   } else {
     if (iframeNotice) iframeNotice.classList.add('hidden');
-    if (standaloneNotice) standaloneNotice.classList.remove('hidden');
-    if (openTabContainer) openTabContainer.classList.add('hidden');
-    if (installBtnContainer) installBtnContainer.classList.remove('hidden');
-  }
-
-  // Check if running in standalone mode (already installed PWA)
-  if (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone) {
-    const banner = document.getElementById('pwa-install-banner');
-    if (banner) banner.style.display = 'none';
+    if (topNotice) topNotice.classList.remove('hidden');
+    if (openTabBtn) openTabBtn.classList.add('hidden');
+    if (installBtn) installBtn.classList.remove('hidden');
   }
 });
 
+// Single function to open app in a fixed named window (reuses existing tab, prevents opening multiple tabs)
+function openAppInSingleTab() {
+  window.open(window.location.href, 'LaboratorioLinguisticoPWAApp');
+}
+
+// Function called when clicking 'Installa App'
 function triggerPwaInstall() {
   if (deferredPrompt) {
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then((choiceResult) => {
       if (choiceResult.outcome === 'accepted') {
-        console.log('[PWA] User accepted prompt');
+        console.log('[PWA] User installed the app');
         closePwaBanner();
       }
       deferredPrompt = null;
     });
   } else {
+    // If prompt is not directly available (e.g., iOS Safari, Firefox, or beforeinstallprompt pending)
     showPwaInstructionsModal();
   }
 }
@@ -82,14 +81,14 @@ function triggerPwaInstall() {
 function copyAppUrl() {
   const currentUrl = window.location.href;
   navigator.clipboard.writeText(currentUrl).then(() => {
-    const copyText = document.getElementById('pwa-copy-btn-text');
-    if (copyText) {
-      const old = copyText.textContent;
-      copyText.textContent = 'Copiato! ✅';
-      setTimeout(() => { copyText.textContent = old; }, 2000);
+    const btn = document.getElementById('pwa-copy-btn');
+    if (btn) {
+      const originalText = btn.innerHTML;
+      btn.innerHTML = 'Copiato! ✅';
+      setTimeout(() => { btn.innerHTML = originalText; }, 2000);
     }
   }).catch(() => {
-    alert('Copia questo link: ' + currentUrl);
+    alert('Link dell\'app: ' + currentUrl);
   });
 }
 
@@ -117,6 +116,6 @@ function closePwaBanner() {
 }
 
 window.addEventListener('appinstalled', () => {
+  console.log('[PWA] App successfully installed');
   closePwaBanner();
 });
-
