@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Türkçe Metin Düzenleyici</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="/icons/icon-192.svg">
+    <link rel="icon" type="image/svg+xml" href="/icons/icon-192.svg">
+    <script src="/sw-register.js" defer></script>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -26,6 +32,10 @@
 </head>
 <body class="bg-gradient-to-br from-blue-100 to-indigo-200 flex items-center justify-center min-h-screen p-4 font-sans text-gray-800">
     <div class="bg-white p-6 md:p-8 lg:p-10 rounded-xl shadow-2xl w-full max-w-4xl border border-gray-200 transform hover:scale-[1.005] transition-transform duration-300 ease-in-out">
+        <div class="mb-4 flex justify-center gap-3">
+            <a href="/editors.html" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-gray-700 bg-gray-100 hover:bg-gray-200 text-sm font-medium transition-all">← Torna agli Editor</a>
+            <a href="/index.html" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-gray-700 bg-gray-100 hover:bg-gray-200 text-sm font-medium transition-all">🏠 Home</a>
+        </div>
         <h1 class="text-4xl sm:text-5xl font-extrabold mb-6 text-center text-blue-700 leading-tight tracking-tight">
             Türkçe Metin Düzenleyici
         </h1>

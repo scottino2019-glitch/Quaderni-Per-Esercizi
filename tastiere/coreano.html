@@ -4,6 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Korean Text Editor</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="/icons/icon-192.svg">
+  <link rel="icon" type="image/svg+xml" href="/icons/icon-192.svg">
+  <script src="/sw-register.js" defer></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&amp;family=Playfair+Display:wght@600;700&amp;display=swap" rel="stylesheet">
   <script src="/_sdk/element_sdk.js"></script>
@@ -108,6 +114,10 @@
    <div class="min-h-full w-full p-4 md:p-8">
     <div class="max-w-4xl mx-auto"><!-- Header -->
      <header class="text-center mb-8 fade-in">
+      <div class="mb-6 flex justify-center gap-3" dir="ltr">
+       <a href="/editors.html" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-white/90 bg-white/10 hover:bg-white/20 text-sm font-medium transition-all border border-white/10">← Torna agli Editor</a>
+       <a href="/index.html" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-white/90 bg-white/10 hover:bg-white/20 text-sm font-medium transition-all border border-white/10">🏠 Home</a>
+      </div>
       <h1 id="editor-title" class="text-3xl md:text-4xl font-semibold text-white mb-2" style="font-family: 'Playfair Display', serif;">Korean Text Editor</h1>
       <p class="text-gray-400 text-sm">Write beautifully in Korean - 한글로 아름답게 쓰세요</p>
      </header><!-- Language Display -->
