@@ -3,15 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Metadati per PWA -->
+<meta name="theme-color" content="#ffffff">
+<meta name="description" content="La descrizione della tua applicazione">
+<link rel="apple-touch-icon" href="/pwa-192x192.png">
     <title>La Mia Scrivania Creativa</title>
-    <!-- PWA Configuration -->
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#2563eb">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="/icons/icon-192.png">
-    <link rel="icon" type="image/png" href="/icons/icon-192.png">
-    <script src="/sw-register.js" defer></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Kalam:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
@@ -67,70 +63,6 @@
     </style>
 </head>
 <body class="min-h-screen p-6 sm:p-12">
-
-    <!-- Banner Installazione PWA -->
-    <div id="pwa-install-banner" class="flex flex-col sm:flex-row mb-8 max-w-3xl mx-auto bg-gradient-to-r from-blue-900 via-indigo-900 to-purple-900 text-white p-4 sm:p-5 rounded-2xl shadow-2xl border border-blue-400/40 items-start sm:items-center justify-between gap-4 backdrop-blur-md">
-        <div class="flex items-center gap-3.5">
-            <img src="/icons/icon-192.png" alt="App Icon" class="w-12 h-12 rounded-xl shadow-md border border-white/20 object-cover shrink-0">
-            <div>
-                <div class="flex items-center gap-2 flex-wrap">
-                    <p class="font-bold text-base sm:text-lg">Il Mio Laboratorio Linguistico</p>
-                    <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-semibold">App Offline</span>
-                </div>
-                <p class="text-xs sm:text-sm text-blue-200 mt-0.5">
-                    Installa l'app sul tuo telefono o computer per usarla ovunque senza connessione!
-                </p>
-            </div>
-        </div>
-
-        <div class="flex items-center gap-2 w-full sm:w-auto justify-end shrink-0">
-            <button onclick="installPwaApp()" class="px-5 py-2.5 bg-emerald-400 hover:bg-emerald-300 text-blue-950 font-bold rounded-xl text-xs sm:text-sm shadow-lg transition-all active:scale-95 flex items-center justify-center gap-1.5">
-                <span>Installa App 📱</span>
-            </button>
-
-            <button onclick="closePwaBanner()" class="p-2 text-blue-200 hover:text-white hover:bg-white/10 rounded-lg transition-all" title="Chiudi">
-                ✕
-            </button>
-        </div>
-    </div>
-
-    <!-- Modal Istruzioni PWA -->
-    <div id="pwa-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl relative text-gray-800 animate-in fade-in zoom-in duration-200">
-            <button onclick="closePwaModal()" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full font-bold">
-                ✕
-            </button>
-            
-            <div class="text-center mb-6">
-                <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner">
-                    <img src="/icons/icon-192.png" alt="PWA Icon" class="w-12 h-12 rounded-xl object-cover">
-                </div>
-                <h3 class="text-xl font-bold text-gray-900">Come Installare l'App</h3>
-                <p class="text-xs text-gray-500 mt-1">Puoi usarla come un'applicazione nativa sul telefono o PC</p>
-            </div>
-
-            <div class="space-y-3.5 text-sm text-gray-600 mb-6">
-                <div class="p-3.5 bg-blue-50 rounded-2xl border border-blue-100">
-                    <p class="font-semibold text-blue-900 text-xs uppercase tracking-wide mb-1">📱 Android & Chrome / Edge</p>
-                    <p class="text-xs text-blue-800">In alto a destra premi i 3 puntini <b>⋮</b> e seleziona <b>"Installa app"</b> o <b>"Aggiungi a schermata Home"</b>.</p>
-                </div>
-
-                <div class="p-3.5 bg-gray-50 rounded-2xl border border-gray-200">
-                    <p class="font-semibold text-gray-800 text-xs uppercase tracking-wide mb-1">🍎 iPhone / iPad (Safari)</p>
-                    <p class="text-xs text-gray-700">In basso al centro premi il pulsante Condividi <span class="font-bold">⎘</span> e seleziona <b>"Aggiungi alla schermata Home"</b>.</p>
-                </div>
-
-                <div class="p-3.5 bg-gray-50 rounded-2xl border border-gray-200">
-                    <p class="font-semibold text-gray-800 text-xs uppercase tracking-wide mb-1">💻 Computer (Chrome / Edge / Brave)</p>
-                    <p class="text-xs text-gray-700">Nella barra degli indirizzi in alto a destra, clicca sull'icona di installazione <b>⊕</b> o nei 3 puntini -> <b>"Installa..."</b></p>
-                </div>
-            </div>
-
-            <button onclick="closePwaModal()" class="w-full py-3 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 transition-colors shadow-lg">
-                Ho Capito 👍
-            </button>
-        </div>
-    </div>
 
     <header class="text-center mb-16">
         <h1 class="font-school-header text-5xl sm:text-7xl text-white drop-shadow-[0_5px_5px_rgba(0,0,0,0.5)] rotate-[-1deg]">
