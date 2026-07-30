@@ -9,9 +9,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
-        name: 'Nome Completo App',
-        short_name: 'NomeBreve',
-        description: 'La descrizione della tua applicazione',
+        name: 'Il Mio Laboratorio Linguistico'',
+        short_name: 'Lab Linguistico',
+        description: 'La mia scrivania virtuale per gli esercizi di lingue',
         theme_color: '#ffffff',
         background_color: '#ffffff',
         display: 'standalone',
