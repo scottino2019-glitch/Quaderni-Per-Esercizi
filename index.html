@@ -74,34 +74,23 @@
             <img src="/icons/icon-192.png" alt="App Icon" class="w-12 h-12 rounded-xl shadow-md border border-white/20 object-cover shrink-0">
             <div>
                 <div class="flex items-center gap-2 flex-wrap">
-                    <p class="font-bold text-base sm:text-lg">Laboratorio Linguistico PWA</p>
-                    <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-semibold">Progressive Web App</span>
+                    <p class="font-bold text-base sm:text-lg">Il Mio Laboratorio Linguistico</p>
+                    <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-semibold">App Offline</span>
                 </div>
-                <!-- Notice inside iframe -->
-                <p id="pwa-iframe-notice" class="text-xs sm:text-sm text-amber-200 font-medium mt-0.5">
-                    💡 Apri l'app a schermo intero per installarla o vederla nel menu del browser.
-                </p>
-                <!-- Notice outside iframe -->
-                <p id="pwa-top-notice" class="hidden text-xs sm:text-sm text-blue-200 mt-0.5">
-                    Installa l'app sul tuo telefono o PC per usarla offline e a schermo intero!
+                <p class="text-xs sm:text-sm text-blue-200 mt-0.5">
+                    Installa l'app sul tuo telefono o computer per usarla ovunque senza connessione!
                 </p>
             </div>
         </div>
 
-        <div class="flex items-center gap-2 w-full sm:w-auto justify-end shrink-0">
-            <!-- Open in Single Tab button (shown in iframe preview) -->
-            <button id="pwa-open-tab-btn" onclick="openAppInSingleTab()" class="px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-blue-950 font-bold rounded-xl text-xs sm:text-sm shadow-lg transition-all active:scale-95 flex items-center justify-center gap-1.5">
-                <span>Apri l'App ↗</span>
+        <div class="flex items-center gap-2 w-full sm:w-auto justify-end shrink-0 flex-wrap">
+            <button onclick="installPwaApp()" class="px-5 py-2.5 bg-emerald-400 hover:bg-emerald-300 text-blue-950 font-bold rounded-xl text-xs sm:text-sm shadow-lg transition-all active:scale-95 flex items-center justify-center gap-1.5">
+                <span>Installa App 📱</span>
             </button>
 
-            <!-- Install button (shown when in main browser window) -->
-            <button id="pwa-install-btn" onclick="triggerPwaInstall()" class="hidden px-5 py-2.5 bg-emerald-400 hover:bg-emerald-300 text-blue-950 font-bold rounded-xl text-xs sm:text-sm shadow-lg transition-all active:scale-95 flex items-center justify-center gap-1.5">
-                <span>Installa sul Dispositivo 📲</span>
-            </button>
-
-            <button id="pwa-copy-btn" onclick="copyAppUrl()" class="px-3 py-2.5 bg-white/10 hover:bg-white/20 text-white font-medium rounded-xl text-xs shadow transition-all border border-white/20" title="Copia Link dell'App">
-                🔗
-            </button>
+            <a id="pwa-tab-link" href="/" target="_blank" rel="noopener" class="px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-blue-950 font-bold rounded-xl text-xs sm:text-sm shadow-lg transition-all active:scale-95 flex items-center justify-center gap-1">
+                <span>Apri in Nuova Scheda ↗</span>
+            </a>
 
             <button onclick="closePwaBanner()" class="p-2 text-blue-200 hover:text-white hover:bg-white/10 rounded-lg transition-all" title="Chiudi">
                 ✕
