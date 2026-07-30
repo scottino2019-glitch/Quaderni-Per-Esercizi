@@ -9,8 +9,8 @@
     <meta name="theme-color" content="#2563eb">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="/icons/icon-192.svg">
-    <link rel="icon" type="image/svg+xml" href="/icons/icon-192.svg">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <link rel="icon" type="image/png" href="/icons/icon-192.png">
     <script src="/sw-register.js" defer></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Kalam:wght@300;400;700&display=swap" rel="stylesheet">
@@ -69,21 +69,27 @@
 <body class="min-h-screen p-6 sm:p-12">
 
     <!-- Banner Installazione PWA -->
-    <div id="pwa-install-banner" class="flex mb-8 max-w-2xl mx-auto bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-4 sm:p-5 rounded-2xl shadow-2xl border border-blue-400/40 items-center justify-between gap-4 backdrop-blur-md">
+    <div id="pwa-install-banner" class="flex mb-8 max-w-2xl mx-auto bg-gradient-to-r from-blue-900 via-indigo-900 to-purple-900 text-white p-4 sm:p-5 rounded-2xl shadow-2xl border border-blue-400/40 items-center justify-between gap-4 backdrop-blur-md">
         <div class="flex items-center gap-3.5">
-            <img src="/icons/icon-192.svg" alt="App Icon" class="w-12 h-12 rounded-xl shadow-md border border-white/20">
+            <img src="/icons/icon-192.png" alt="App Icon" class="w-12 h-12 rounded-xl shadow-md border border-white/20 object-cover">
             <div>
                 <div class="flex items-center gap-2">
-                    <p class="font-bold text-base sm:text-lg">Laboratorio Linguistico</p>
-                    <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-semibold">PWA Pronta</span>
+                    <p class="font-bold text-base sm:text-lg">Laboratorio Linguistico PWA</p>
+                    <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-semibold">Installabile</span>
                 </div>
-                <p class="text-xs sm:text-sm text-blue-200">Installa l'app per usarla offline e a schermo intero!</p>
+                <!-- Messaggio se dentro iframe -->
+                <p id="pwa-iframe-notice" class="text-xs sm:text-sm text-amber-200 font-medium">
+                    ⚠️ Apri in una <b>Nuova Scheda</b> per abilitare l'installazione PWA e il menu del browser.
+                </p>
+                <!-- Messaggio se scheda standalone top-level -->
+                <p id="pwa-standalone-notice" class="hidden text-xs sm:text-sm text-blue-200">
+                    Installa l'app sul tuo dispositivo per usarla offline e a schermo intero!
+                </p>
             </div>
         </div>
         <div class="flex items-center gap-2 shrink-0">
             <button onclick="installPwaApp()" class="px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-blue-950 font-bold rounded-xl text-xs sm:text-sm shadow-lg transition-all active:scale-95 flex items-center gap-1.5">
-                <span>Installa App</span>
-                <span>📱</span>
+                <span id="pwa-btn-text">Apri in Nuova Scheda ↗</span>
             </button>
             <button onclick="closePwaBanner()" class="p-1.5 text-blue-200 hover:text-white hover:bg-white/10 rounded-lg transition-all" title="Chiudi">
                 ✕

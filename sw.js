@@ -1,4 +1,4 @@
-const CACHE_NAME = 'scrivania-linguistica-v1';
+const CACHE_NAME = 'scrivania-linguistica-v2';
 
 const STATIC_ASSETS = [
   '/',
@@ -17,6 +17,8 @@ const STATIC_ASSETS = [
   '/tastiere/thai.html',
   '/tastiere/turco.html',
   '/manifest.json',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
   '/icons/icon-192.svg',
   '/icons/icon-512.svg',
   '/sw-register.js'
