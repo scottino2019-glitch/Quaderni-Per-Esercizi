@@ -12,57 +12,33 @@ if ('serviceWorker' in navigator) {
 }
 
 let deferredPrompt = null;
-const isInIframe = window.self !== window.top;
 
 // Capture beforeinstallprompt event (Chrome, Edge, Android)
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
   console.log('[PWA] beforeinstallprompt event captured');
-
-  // Highlight install button if available
-  const installBtn = document.getElementById('pwa-direct-install-btn');
-  if (installBtn) {
-    installBtn.classList.remove('bg-gray-200', 'text-gray-700');
-    installBtn.classList.add('bg-emerald-400', 'text-blue-950', 'animate-pulse');
-  }
 });
 
 // Setup page state on load
 window.addEventListener('DOMContentLoaded', () => {
   const pwaBanner = document.getElementById('pwa-install-banner');
-  const iframeNotice = document.getElementById('pwa-iframe-notice');
-  const topNotice = document.getElementById('pwa-top-notice');
-  const openTabBtn = document.getElementById('pwa-open-tab-btn');
-  const installBtn = document.getElementById('pwa-install-btn');
+  const tabLink = document.getElementById('pwa-tab-link');
+
+  // Set standard external link target to current page URL
+  if (tabLink) {
+    tabLink.href = window.location.href;
+  }
 
   // Check if already running in standalone PWA mode
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
   if (isStandalone && pwaBanner) {
     pwaBanner.style.display = 'none';
-    return;
-  }
-
-  if (isInIframe) {
-    if (iframeNotice) iframeNotice.classList.remove('hidden');
-    if (topNotice) topNotice.classList.add('hidden');
-    if (openTabBtn) openTabBtn.classList.remove('hidden');
-    if (installBtn) installBtn.classList.add('hidden');
-  } else {
-    if (iframeNotice) iframeNotice.classList.add('hidden');
-    if (topNotice) topNotice.classList.remove('hidden');
-    if (openTabBtn) openTabBtn.classList.add('hidden');
-    if (installBtn) installBtn.classList.remove('hidden');
   }
 });
 
-// Single function to open app in a fixed named window (reuses existing tab, prevents opening multiple tabs)
-function openAppInSingleTab() {
-  window.open(window.location.href, 'LaboratorioLinguisticoPWAApp');
-}
-
-// Function called when clicking 'Installa App'
-function triggerPwaInstall() {
+// Primary install trigger function
+function installPwaApp() {
   if (deferredPrompt) {
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then((choiceResult) => {
@@ -73,7 +49,7 @@ function triggerPwaInstall() {
       deferredPrompt = null;
     });
   } else {
-    // If prompt is not directly available (e.g., iOS Safari, Firefox, or beforeinstallprompt pending)
+    // If prompt is not directly available (e.g. inside iframe or iOS Safari), show modal instructions
     showPwaInstructionsModal();
   }
 }
