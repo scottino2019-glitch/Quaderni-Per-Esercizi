@@ -9,7 +9,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
-        name: 'Il Mio Laboratorio Linguistico'',
+        name: 'Il Mio Laboratorio Linguistico',
         short_name: 'Lab Linguistico',
         description: 'Quaderni per esercizi e tastiere multilingue per l'apprendimento delle lingue',
         theme_color: '#ffffff',
