@@ -1,0 +1,6 @@
+{
+  "name": "Quaderni Per Esercizi",
+  "description": "Un laboratorio linguistico con quaderni ed editor di testo per diverse lingue.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
