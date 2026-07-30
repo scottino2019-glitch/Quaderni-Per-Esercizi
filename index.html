@@ -75,37 +75,33 @@
             <div>
                 <div class="flex items-center gap-2 flex-wrap">
                     <p class="font-bold text-base sm:text-lg">Laboratorio Linguistico PWA</p>
-                    <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-semibold">App Installabile</span>
+                    <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-semibold">Progressive Web App</span>
                 </div>
                 <!-- Notice inside iframe -->
                 <p id="pwa-iframe-notice" class="text-xs sm:text-sm text-amber-200 font-medium mt-0.5">
-                    ⚠️ Per installare l'app o vederla nel menu del browser, apri l'app in una nuova scheda.
+                    💡 Apri l'app a schermo intero per installarla o vederla nel menu del browser.
                 </p>
                 <!-- Notice outside iframe -->
-                <p id="pwa-standalone-notice" class="hidden text-xs sm:text-sm text-blue-200 mt-0.5">
-                    Installa l'app sul dispositivo per usarla offline e a schermo intero!
+                <p id="pwa-top-notice" class="hidden text-xs sm:text-sm text-blue-200 mt-0.5">
+                    Installa l'app sul tuo telefono o PC per usarla offline e a schermo intero!
                 </p>
             </div>
         </div>
 
         <div class="flex items-center gap-2 w-full sm:w-auto justify-end shrink-0">
-            <!-- Open in new tab action (shown when in iframe) -->
-            <div id="pwa-open-tab-container" class="flex items-center gap-2 w-full sm:w-auto">
-                <a href="#" target="_blank" rel="noopener noreferrer" class="pwa-tab-link flex-1 sm:flex-initial px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-blue-950 font-bold rounded-xl text-xs sm:text-sm shadow-lg transition-all active:scale-95 text-center flex items-center justify-center gap-1">
-                    <span>Apri in Nuova Scheda ↗</span>
-                </a>
-                <button onclick="copyAppUrl()" class="px-3 py-2.5 bg-white/10 hover:bg-white/20 text-white font-medium rounded-xl text-xs shadow transition-all border border-white/20 flex items-center gap-1">
-                    <span id="pwa-copy-btn-text">Copia Link 🔗</span>
-                </button>
-            </div>
+            <!-- Open in Single Tab button (shown in iframe preview) -->
+            <button id="pwa-open-tab-btn" onclick="openAppInSingleTab()" class="px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-blue-950 font-bold rounded-xl text-xs sm:text-sm shadow-lg transition-all active:scale-95 flex items-center justify-center gap-1.5">
+                <span>Apri l'App ↗</span>
+            </button>
 
-            <!-- Install button (shown when in top-level browser window) -->
-            <div id="pwa-install-btn-container" class="hidden">
-                <button onclick="triggerPwaInstall()" class="px-5 py-2.5 bg-emerald-400 hover:bg-emerald-300 text-blue-950 font-bold rounded-xl text-xs sm:text-sm shadow-lg transition-all active:scale-95 flex items-center gap-1.5">
-                    <span>Installa App</span>
-                    <span>📱</span>
-                </button>
-            </div>
+            <!-- Install button (shown when in main browser window) -->
+            <button id="pwa-install-btn" onclick="triggerPwaInstall()" class="hidden px-5 py-2.5 bg-emerald-400 hover:bg-emerald-300 text-blue-950 font-bold rounded-xl text-xs sm:text-sm shadow-lg transition-all active:scale-95 flex items-center justify-center gap-1.5">
+                <span>Installa sul Dispositivo 📲</span>
+            </button>
+
+            <button id="pwa-copy-btn" onclick="copyAppUrl()" class="px-3 py-2.5 bg-white/10 hover:bg-white/20 text-white font-medium rounded-xl text-xs shadow transition-all border border-white/20" title="Copia Link dell'App">
+                🔗
+            </button>
 
             <button onclick="closePwaBanner()" class="p-2 text-blue-200 hover:text-white hover:bg-white/10 rounded-lg transition-all" title="Chiudi">
                 ✕
@@ -124,35 +120,29 @@
                 <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner">
                     <img src="/icons/icon-192.png" alt="PWA Icon" class="w-12 h-12 rounded-xl object-cover">
                 </div>
-                <h3 class="text-xl font-bold text-gray-900">Come Installare l'App (PWA)</h3>
-                <p class="text-xs text-gray-500 mt-1">Usa l'app come un'applicazione nativa sul tuo telefono o PC</p>
+                <h3 class="text-xl font-bold text-gray-900">Come Installare l'App</h3>
+                <p class="text-xs text-gray-500 mt-1">Puoi usarla come un'applicazione nativa sul telefono o PC</p>
             </div>
 
-            <div class="space-y-4 text-sm text-gray-600 mb-6">
-                <div class="bg-amber-50 border border-amber-200 p-3.5 rounded-2xl flex items-start gap-3">
-                    <span class="text-xl shrink-0">🌐</span>
-                    <div>
-                        <p class="font-semibold text-amber-900">1. Apri l'app in una nuova scheda:</p>
-                        <p class="text-xs text-amber-800 mt-0.5">I browser bloccano i prompt di installazione PWA dentro gli iframe della preview.</p>
-                        <a href="#" target="_blank" rel="noopener noreferrer" class="pwa-tab-link mt-2.5 inline-flex items-center gap-1 px-3.5 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition-colors shadow">
-                            Apri ora in una nuova scheda ↗
-                        </a>
-                    </div>
+            <div class="space-y-3.5 text-sm text-gray-600 mb-6">
+                <div class="p-3.5 bg-blue-50 rounded-2xl border border-blue-100">
+                    <p class="font-semibold text-blue-900 text-xs uppercase tracking-wide mb-1">📱 Android & Chrome / Edge</p>
+                    <p class="text-xs text-blue-800">In alto a destra premi i 3 puntini <b>⋮</b> e seleziona <b>"Installa app"</b> o <b>"Aggiungi a schermata Home"</b>.</p>
                 </div>
 
-                <div class="p-3 bg-gray-50 rounded-xl border border-gray-100">
-                    <p class="font-semibold text-gray-800 text-xs uppercase tracking-wide mb-1">📱 Android & Chrome / Edge</p>
-                    <p class="text-xs">In alto a destra premi i 3 puntini <b>⋮</b> e seleziona <b>"Installa app"</b> oppure <b>"Aggiungi a schermata Home"</b>.</p>
-                </div>
-
-                <div class="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                <div class="p-3.5 bg-gray-50 rounded-2xl border border-gray-200">
                     <p class="font-semibold text-gray-800 text-xs uppercase tracking-wide mb-1">🍎 iPhone / iPad (Safari)</p>
-                    <p class="text-xs">Premi il pulsante Condividi <span class="font-bold">⎘</span> in basso al centro e seleziona <b>"Aggiungi alla schermata Home"</b>.</p>
+                    <p class="text-xs text-gray-700">In basso al centro premi il pulsante Condividi <span class="font-bold">⎘</span> e seleziona <b>"Aggiungi alla schermata Home"</b>.</p>
+                </div>
+
+                <div class="p-3.5 bg-gray-50 rounded-2xl border border-gray-200">
+                    <p class="font-semibold text-gray-800 text-xs uppercase tracking-wide mb-1">💻 Computer (Chrome / Edge / Brave)</p>
+                    <p class="text-xs text-gray-700">Nella barra degli indirizzi in alto a destra, clicca sull'icona di installazione <b>⊕</b> o nei 3 puntini -> <b>"Installa..."</b></p>
                 </div>
             </div>
 
-            <button onclick="closePwaModal()" class="w-full py-3 bg-gray-900 text-white font-semibold rounded-2xl hover:bg-gray-800 transition-colors">
-                Ho Capito
+            <button onclick="closePwaModal()" class="w-full py-3 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 transition-colors shadow-lg">
+                Ho Capito 👍
             </button>
         </div>
     </div>
