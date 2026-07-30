@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <rect width="192" height="192" rx="40" fill="#2563eb"/>
+  <!-- Notebook Cover -->
+  <rect x="36" y="28" width="120" height="136" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="4"/>
+  <!-- Spiral holes -->
+  <line x1="56" y1="28" x2="56" y2="164" stroke="#ffadad" stroke-width="3" stroke-dasharray="4,4"/>
+  <rect x="28" y="44" width="16" height="8" rx="4" fill="#64748b"/>
+  <rect x="28" y="68" width="16" height="8" rx="4" fill="#64748b"/>
+  <rect x="28" y="92" width="16" height="8" rx="4" fill="#64748b"/>
+  <rect x="28" y="116" width="16" height="8" rx="4" fill="#64748b"/>
+  <rect x="28" y="140" width="16" height="8" rx="4" fill="#64748b"/>
+  <!-- Lines -->
+  <line x1="70" y1="56" x2="140" y2="56" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
+  <line x1="70" y1="76" x2="140" y2="76" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
+  <line x1="70" y1="96" x2="140" y2="96" stroke="#94a3b8" stroke-width="3" stroke-linecap="round"/>
+  <!-- Pencil -->
+  <path d="M120 130 L145 105 L155 115 L130 140 Z" fill="#f59e0b"/>
+  <polygon points="120,130 115,145 130,140" fill="#d97706"/>
+  <polygon points="115,145 112,148 118,147" fill="#1e293b"/>
+</svg>
