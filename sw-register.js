@@ -20,17 +20,9 @@ window.addEventListener('beforeinstallprompt', (e) => {
   console.log('[PWA] beforeinstallprompt event captured');
 });
 
-// Setup page state on load
+// Hide banner if already installed/running in standalone mode
 window.addEventListener('DOMContentLoaded', () => {
   const pwaBanner = document.getElementById('pwa-install-banner');
-  const tabLink = document.getElementById('pwa-tab-link');
-
-  // Set standard external link target to current page URL
-  if (tabLink) {
-    tabLink.href = window.location.href;
-  }
-
-  // Check if already running in standalone PWA mode
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
   if (isStandalone && pwaBanner) {
     pwaBanner.style.display = 'none';
@@ -49,23 +41,9 @@ function installPwaApp() {
       deferredPrompt = null;
     });
   } else {
-    // If prompt is not directly available (e.g. inside iframe or iOS Safari), show modal instructions
+    // If prompt is not directly available, show instructions modal
     showPwaInstructionsModal();
   }
-}
-
-function copyAppUrl() {
-  const currentUrl = window.location.href;
-  navigator.clipboard.writeText(currentUrl).then(() => {
-    const btn = document.getElementById('pwa-copy-btn');
-    if (btn) {
-      const originalText = btn.innerHTML;
-      btn.innerHTML = 'Copiato! ✅';
-      setTimeout(() => { btn.innerHTML = originalText; }, 2000);
-    }
-  }).catch(() => {
-    alert('Link dell\'app: ' + currentUrl);
-  });
 }
 
 function showPwaInstructionsModal() {
